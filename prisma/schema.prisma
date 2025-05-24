@@ -6,16 +6,25 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // または 'sqlite', 'mysql' など、使用するDBに合わせて変更
+  provider = "postgresql" // または 'sqlite', 'mysql' など
   url      = env("DATABASE_URL")
 }
 
+// 予約タイプを定義するEnum
+enum BookingType {
+  PERSON
+  LUGGAGE
+}
+
 model Booking {
-  id        String   @id @default(uuid()) // 予約の一意なID
-  date      DateTime // 予約日
-  time      String   // 予約時間 (例: "10:00", "14:30" など)
-  name      String   // 予約者名
-  email     String   // 予約者メールアドレス
-  createdAt DateTime @default(now()) // 予約作成日時
-  updatedAt DateTime @updatedAt    // 予約更新日時
+  id                String      @id @default(uuid()) // 予約の一意なID
+  bookingNumber     String      @unique // 予約をまとめるためのユニークな番号
+  email             String      // 予約者メールアドレス
+  departureBusStop  String      // 出発バス停
+  arrivalBusStop    String      // 到着バス停
+  bookingDate       DateTime    // 予約日 (日付のみ)
+  bookingTime       String      // 予約時間 (例: "10:00", "14:30" など)
+  type              BookingType // 人か荷物か
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 }
