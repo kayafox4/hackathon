@@ -4,10 +4,11 @@ const prisma = new PrismaClient();
 
 async function getBookings() {
   const bookings = await prisma.booking.findMany({
-    orderBy: {
-      bookingDate: 'asc',
-      bookingTime: 'asc',
-    },
+    // ★ここを修正しました！★
+    orderBy: [
+      { bookingDate: 'asc' },
+      { bookingTime: 'asc' },
+    ],
   });
   return bookings;
 }
