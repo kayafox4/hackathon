@@ -1,4 +1,4 @@
-import { createBooking } from "@/app/actions/booking";
+import { createBooking } from "./actions/booking";
 
 export default function HomePage() {
   return (
