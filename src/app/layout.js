@@ -1,11 +1,8 @@
-import './globals.css'; // グローバルCSSをインポート
+// src/app/layout.js
 
-export const metadata = {
-  title: 'バス予約アプリ',
-  description: 'Next.js App Routerを使ったバス予約機能',
-};
+import './globals.css';
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }) { 
   return (
     <html lang="ja">
       <body>{children}</body>
