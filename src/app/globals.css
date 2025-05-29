@@ -1,21 +1,25 @@
+/* src/app/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Light Mode */
+  --page-bg-rgb: 255, 255, 255; /* 白色のページ背景 */
+  --page-text-rgb: 17, 24, 39;  /* Tailwind CSSのgray-800相当の濃いグレー (文字色) */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* ダークモードの背景と文字色 (お好みで調整してください) */
+    --page-bg-rgb: 31, 41, 55;    /* Tailwind CSSのgray-700かgray-800相当 */
+    --page-text-rgb: 229, 231, 235; /* Tailwind CSSのgray-200相当 */
   }
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: rgb(var(--page-bg-rgb));
+  color: rgb(var(--page-text-rgb));
+  /* Next.jsデフォルトのInterフォントを使用する場合は、layout.jsでの指定を活かします */
+  /* font-family: Arial, Helvetica, sans-serif; */
 }
