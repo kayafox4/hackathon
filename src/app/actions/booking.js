@@ -53,14 +53,14 @@ export async function createBooking(formData) {
 export async function getBookings() {
   try {
     const bookings = await prisma.booking.findMany({
-      orderBy: {
-        bookingDate: 'asc',
-        bookingTime: 'asc',
-      },
+      orderBy: [ // ← オブジェクトの配列形式に修正
+        { bookingDate: 'asc' },
+        { bookingTime: 'asc' },
+      ],
     });
     return { success: true, bookings };
   } catch (error) {
-    console.error("予約取得エラー:", error);
+    console.error("予約取得エラー:", error); // エラーログはここから出力されています
     return { success: false, message: '予約の取得に失敗しました。' };
   }
 }
