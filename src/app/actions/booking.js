@@ -1,66 +1,33 @@
+// src/app/actions/booking.js
 "use server";
 
 import { PrismaClient } from '@prisma/client';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from 'next/cache'; // これはキャンセル機能実装時に使うかも
 
 const prisma = new PrismaClient();
 
-// 予約を作成するServer Action
-export async function createBooking(formData) {
-  const bookingNumber = formData.get('bookingNumber');
-  const email = formData.get('email');
-  const departureBusStop = formData.get('departureBusStop');
-  const arrivalBusStop = formData.get('arrivalBusStop');
-  const bookingDate = formData.get('bookingDate');
-  const bookingTime = formData.get('bookingTime');
-  const type = formData.get('type'); // 'PERSON' または 'LUGGAGE'
+// ... (createBooking 関数 と generateBookingNumber 関数はそのまま) ...
 
-  // 簡易的なバリデーション
-  if (!bookingNumber || !email || !departureBusStop || !arrivalBusStop || !bookingDate || !bookingTime || !type) {
-    return { success: false, message: '全ての項目を入力してください。' };
+// 特定のユーザーの予約を取得するServer Action (履歴ページ用)
+export async function getUserBookings(userEmail) {
+  if (!userEmail) {
+    return { success: false, message: 'ユーザー情報が取得できませんでした。', bookings: [] };
   }
-
-  // Enumの値が正しいかチェック (簡易的)
-  if (type !== 'PERSON' && type !== 'LUGGAGE') {
-    return { success: false, message: '予約タイプは「人」または「荷物」を選択してください。' };
-  }
-
-  try {
-    const newBooking = await prisma.booking.create({
-      data: {
-        bookingNumber,
-        email,
-        departureBusStop,
-        arrivalBusStop,
-        bookingDate: new Date(bookingDate), // 日付形式に変換
-        bookingTime,
-        type: type, // Enumの値を直接渡す
-      },
-    });
-    revalidatePath('/bookings'); // 予約一覧ページを再検証
-    return { success: true, booking: newBooking };
-  } catch (error) {
-    console.error("予約作成エラー:", error);
-    // PrismaのエラーコードP2002はunique制約違反 (bookingNumberの重複)
-    if (error.code === 'P2002') {
-      return { success: false, message: 'この予約番号は既に存在します。別の番号をお試しください。' };
-    }
-    return { success: false, message: '予約作成に失敗しました。' };
-  }
-}
-
-// 全ての予約を取得するServer Action
-export async function getBookings() {
   try {
     const bookings = await prisma.booking.findMany({
-      orderBy: [ // ← オブジェクトの配列形式に修正
-        { bookingDate: 'asc' },
-        { bookingTime: 'asc' },
+      where: {
+        email: userEmail, // ユーザーのメールアドレスで絞り込み
+      },
+      orderBy: [
+        { bookingDate: 'desc' }, // 予約日で降順 (新しい順)
+        { bookingTime: 'desc' }, // 予約時間で降順
       ],
     });
-    return { success: true, bookings };
+    return { success: true, bookings: bookings };
   } catch (error) {
-    console.error("予約取得エラー:", error); // エラーログはここから出力されています
-    return { success: false, message: '予約の取得に失敗しました。' };
+    console.error("ユーザーの予約取得エラー:", error);
+    return { success: false, message: '予約履歴の取得に失敗しました。', bookings: [] };
   }
 }
+
+// (既存の getBookings 関数は、管理者用など、全件取得の用途があれば残してもOKです)
