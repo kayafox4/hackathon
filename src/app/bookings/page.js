@@ -1,11 +1,18 @@
 // src/app/bookings/page.js
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import BusStopInput from '@/app/components/BusStopInput';
 import { useSession } from 'next-auth/react';
 import { createBooking } from '../actions/booking';
 
+// react-day-picker と date-fns をインポート
+import { DayPicker } from 'react-day-picker';
+import 'react-day-picker/dist/style.css'; // 基本スタイルをインポート
+import { format as formatDateFn, addMonths, isValid as isValidDate, startOfDay } from 'date-fns';
+import { ja } from 'date-fns/locale'; // 日本語ロケール
+
+// 予約番号生成関数
 function generateBookingNumber() {
   return `BK-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`;
 }
@@ -13,7 +20,13 @@ function generateBookingNumber() {
 export default function BookingsPage() {
   const [departureBusStop, setDepartureBusStop] = useState('');
   const [arrivalBusStop, setArrivalBusStop] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
+  
+  // selectedDate は Date オブジェクトまたは undefined で管理
+  const [selectedDate, setSelectedDate] = useState(undefined); 
+  const [showCalendar, setShowCalendar] = useState(false);
+  const dateInputRef = useRef(null); // 日付入力欄のref
+  const calendarContainerRef = useRef(null); // カレンダーとそのトリガーを含むコンテナのref
+
   const [selectedHour, setSelectedHour] = useState('');
   const [selectedMinute, setSelectedMinute] = useState('');
   const [passengerType, setPassengerType] = useState('person');
@@ -21,30 +34,6 @@ export default function BookingsPage() {
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [formMessage, setFormMessage] = useState({ type: '', text: '' });
-
-  const generateDateOptions = () => {
-    const options = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const threeMonthsLater = new Date(today);
-    threeMonthsLater.setMonth(today.getMonth() + 3);
-
-    let currentDate = new Date(today);
-    let count = 0;
-    while (currentDate.getTime() <= threeMonthsLater.getTime() && count < 93) {
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-      const day = String(currentDate.getDate()).padStart(2, '0');
-      const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][currentDate.getDay()];
-      const value = `${year}-${month}-${day}`;
-      const label = `${year}年${month}月${day}日(${dayOfWeek})`;
-      options.push({ value, label });
-      currentDate.setDate(currentDate.getDate() + 1);
-      count++;
-    }
-    return options;
-  };
 
   const generateHourOptions = () => {
     const options = [];
@@ -54,7 +43,6 @@ export default function BookingsPage() {
     }
     return options;
   };
-
   const generateMinuteOptions = () => {
     const options = [];
     for (let m = 0; m < 60; m++) {
@@ -63,29 +51,34 @@ export default function BookingsPage() {
     }
     return options;
   };
-
-  const dateOptions = generateDateOptions();
   const hourOptions = generateHourOptions();
   const minuteOptions = generateMinuteOptions();
 
+  const handleDateSelect = (date) => {
+    if (date) {
+      setSelectedDate(startOfDay(date)); // 時刻情報をリセットして日付のみを確実に保持
+    }
+    setShowCalendar(false);
+  };
+
   const handleSetCurrentDateTime = () => {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-
-    setSelectedDate(`${year}-${month}-${day}`);
-    setSelectedHour(hours);
-    setSelectedMinute(minutes);
+    setSelectedDate(startOfDay(now));
+    setSelectedHour(formatDateFn(now, 'HH'));
+    setSelectedMinute(formatDateFn(now, 'mm'));
+    setShowCalendar(false); // 現在時刻設定後カレンダーを閉じる
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormMessage({ type: '', text: '' });
 
-    if (!departureBusStop || !arrivalBusStop || !selectedDate || !selectedHour || !selectedMinute) {
+    let formattedDate = '';
+    if (selectedDate && isValidDate(selectedDate)) {
+      formattedDate = formatDateFn(selectedDate, 'yyyy-MM-dd');
+    }
+
+    if (!departureBusStop || !arrivalBusStop || !formattedDate || !selectedHour || !selectedMinute) {
       setFormMessage({ type: 'error', text: 'すべての必須項目を入力してください。' });
       return;
     }
@@ -93,15 +86,17 @@ export default function BookingsPage() {
       setFormMessage({ type: 'error', text: 'ログインしていません。ログインしてください。' });
       return;
     }
+
     setIsLoading(true);
     const formData = new FormData();
     formData.append('bookingNumber', generateBookingNumber());
     formData.append('email', session.user.email);
     formData.append('departureBusStop', departureBusStop);
     formData.append('arrivalBusStop', arrivalBusStop);
-    formData.append('bookingDate', selectedDate);
+    formData.append('bookingDate', formattedDate);
     formData.append('bookingTime', `${selectedHour}:${selectedMinute}`);
     formData.append('type', passengerType === 'person' ? 'PERSON' : 'LUGGAGE');
+
     try {
       const result = await createBooking(formData);
       if (result.success && result.booking) {
@@ -109,154 +104,126 @@ export default function BookingsPage() {
           type: 'success',
           text: `予約が完了しました！ (予約番号: ${result.booking.bookingNumber})`,
         });
+        // フォームリセット (任意)
+        // setDepartureBusStop(''); setArrivalBusStop(''); setSelectedDate(undefined);
+        // setSelectedHour(''); setSelectedMinute(''); setPassengerType('person');
       } else {
         setFormMessage({ type: 'error', text: result.message || '予約の作成に失敗しました。' });
       }
     } catch (error) {
       console.error("予約作成中に予期せぬエラー:", error);
-      setFormMessage({ type: 'error', text: '予期せぬエラーが発生しました。もう一度お試しください。' });
+      setFormMessage({ type: 'error', text: '予期せぬエラーが発生しました。' });
     } finally {
       setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (calendarContainerRef.current && !calendarContainerRef.current.contains(event.target)) {
+        setShowCalendar(false);
+      }
+    }
+    if (showCalendar) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
+
+  const today = startOfDay(new Date()); // 今日の日付 (時刻なし)
+  const threeMonthsFromToday = addMonths(today, 3);
+
   return (
-    <div className="min-h-screen p-4 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-      <h1 className="text-3xl font-bold mb-6 text-center text-green-700 dark:text-green-300">バス予約</h1>
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-xl w-full max-w-md mx-auto">
+    <div className="min-h-screen p-4 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+      <h1 className="text-3xl font-bold mb-6 text-center text-green-700 dark:text-green-400" style={{ fontFamily: 'var(--font-eb-garamond), serif' }}>
+        バス予約
+      </h1>
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md mx-auto border border-gray-200 dark:border-gray-700">
         {formMessage.text && (
-          <div
-            className={`p-3 rounded-md text-sm mb-4 ${
-              formMessage.type === 'success'
-                ? 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100'
-                : 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100'
-            }`}
-          >
+          <div className={`p-3 rounded-md text-sm mb-4 ${formMessage.type === 'success' ? 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100' : 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100'}`}>
             {formMessage.text}
           </div>
         )}
-        <BusStopInput
-          label="出発バス停"
-          value={departureBusStop}
-          onChange={setDepartureBusStop}
-          placeholder="例: 大津駅"
-        />
-        <BusStopInput
-          label="到着バス停"
-          value={arrivalBusStop}
-          onChange={setArrivalBusStop}
-          placeholder="例: びわ湖ホール"
-        />
-        <div className="mb-4">
+        <BusStopInput label="出発バス停" value={departureBusStop} onChange={setDepartureBusStop} placeholder="例: 大津駅" />
+        <BusStopInput label="到着バス停" value={arrivalBusStop} onChange={setArrivalBusStop} placeholder="例: びわ湖ホール" />
+
+        {/* 日付選択 (カレンダーポップアップ) */}
+        <div className="mb-4" ref={calendarContainerRef}> {/* 外側クリック検知のため ref をコンテナに */}
           <div className="flex items-center justify-between mb-1">
-            <label htmlFor="bookingDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="date-input-trigger" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               日付
             </label>
-            <button
-              type="button"
-              onClick={handleSetCurrentDateTime}
-              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 text-xs font-semibold"
-            >
-              現在時刻
+            <button type="button" onClick={handleSetCurrentDateTime} className="text-sm text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 font-semibold">
+              今日の日付
             </button>
           </div>
-          <select
-            id="bookingDate"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            // --- 修正点 ---
-            // classNameの h-60 を削除 (高さ固定をやめる)
-            // size={10} を削除 (リストボックス表示をやめる)
-            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+          <input
+            id="date-input-trigger" // input自体がトリガー
+            ref={dateInputRef}
+            type="text"
+            value={selectedDate ? formatDateFn(selectedDate, 'yyyy年MM月dd日 (eee)', { locale: ja }) : ''}
+            onFocus={() => setShowCalendar(true)}
+            onClick={() => setShowCalendar(prev => !prev)} // クリックでもトグル
+            readOnly
+            placeholder="日付をタップして選択"
+            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm cursor-pointer focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             required
-          >
-            <option value="" disabled>日付を選択</option>
-            {dateOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          />
+          {showCalendar && (
+            <div className="calendar-popover"> {/* globals.cssでスタイル指定 */}
+              <DayPicker
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleDateSelect}
+                locale={ja}
+                fromDate={today}
+                toDate={threeMonthsFromToday}
+                month={selectedDate || today} // 初期表示月
+                onMonthChange={(month) => { /* 必要なら月の変更をハンドル */ }}
+                captionLayout="dropdown-buttons"
+                fromYear={today.getFullYear()}
+                toYear={threeMonthsFromToday.getFullYear()}
+                modifiersClassNames={{
+                  selected: 'rdp-day_selected', // globals.cssで定義したクラスを適用
+                  today: 'rdp-day_today'
+                }}
+                showOutsideDays
+                initialFocus={showCalendar} // カレンダー表示時にフォーカス
+              />
+            </div>
+          )}
         </div>
+
+        {/* 時間と分 (以前のドロップダウン形式のまま) */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            時間
-          </label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">時間</label>
           <div className="flex space-x-2">
-            <select
-              id="bookingHour"
-              value={selectedHour}
-              onChange={(e) => setSelectedHour(e.target.value)}
-              // --- 修正点 ---
-              // classNameの h-60 を削除
-              // size={10} を削除
-              className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              required
-            >
+            <select id="bookingHour" value={selectedHour} onChange={(e) => setSelectedHour(e.target.value)} className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" required>
               <option value="" disabled>時</option>
-              {hourOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              {hourOptions.map((option) => (<option key={option.value} value={option.value}>{option.label}</option>))}
             </select>
-            <select
-              id="bookingMinute"
-              value={selectedMinute}
-              onChange={(e) => setSelectedMinute(e.target.value)}
-              // --- 修正点 ---
-              // classNameの h-60 を削除
-              // size={10} を削除
-              className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              required
-            >
+            <select id="bookingMinute" value={selectedMinute} onChange={(e) => setSelectedMinute(e.target.value)} className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" required>
               <option value="" disabled>分</option>
-              {minuteOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              {minuteOptions.map((option) => (<option key={option.value} value={option.value}>{option.label}</option>))}
             </select>
           </div>
         </div>
+
+        {/* 乗車タイプ選択ボタン */}
         <div className="mb-6">
-          <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            乗車するもの
-          </span>
+          <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">乗車するもの</span>
           <div className="flex rounded-md shadow-sm">
-            <button
-              type="button"
-              onClick={() => setPassengerType('person')}
-              className={`
-                flex-1 py-2 px-4 rounded-l-md text-sm font-medium transition-colors duration-200 ease-in-out
-                ${passengerType === 'person'
-                  ? 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'
-                }
-              `}
-            >
-              人
-            </button>
-            <button
-              type="button"
-              onClick={() => setPassengerType('item')}
-              className={`
-                flex-1 py-2 px-4 rounded-r-md text-sm font-medium transition-colors duration-200 ease-in-out
-                ${passengerType === 'item'
-                  ? 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'
-                }
-              `}
-            >
-              物
-            </button>
+            <button type="button" onClick={() => setPassengerType('person')} className={`flex-1 py-2 px-4 rounded-l-md text-sm font-medium transition-colors duration-200 ease-in-out ${passengerType === 'person' ? 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'}`}>人</button>
+            <button type="button" onClick={() => setPassengerType('item')} className={`flex-1 py-2 px-4 rounded-r-md text-sm font-medium transition-colors duration-200 ease-in-out ${passengerType === 'item' ? 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'}`}>物</button>
           </div>
         </div>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-md transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+
+        {/* 送信ボタン */}
+        <button type="submit" disabled={isLoading} className="w-full py-2.5 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md shadow-md transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
           {isLoading ? '予約処理中...' : 'バスを予約する'}
         </button>
       </form>
