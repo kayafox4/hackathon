@@ -5,157 +5,83 @@
 
 :root {
   /* Light Mode */
-  --page-bg-rgb: 255, 255, 255; /* 白色のページ背景 */
-  --page-text-rgb: 17, 24, 39;  /* Tailwind CSSのgray-800相当の濃いグレー (文字色) */
+  --page-bg-rgb: 255, 255, 255;
+  --page-text-rgb: 17, 24, 39;
 
-  /* --- react-day-picker アンティーク風スタイル用変数 --- */
-  --rdp-cell-size: 38px; /* 日付セルのサイズ (少し大きめ) */
-  --rdp-accent-color: #386641; /* 深い緑 (アプリのテーマグリーン系) */
-  --rdp-background-color: #fdfaf2; /* 背景色 (クリーム色・古紙の色) */
-  --rdp-selected-color: #ffffff; /* 選択された日の文字色 */
-
-  --rdp-accent-color-dark: #6a994e; /* ダークモード時のアクセントカラー */
-  --rdp-background-color-dark: #3a3a3a; /* ダークモード時のカレンダー背景 */
-  --rdp-selected-color-dark: #ffffff;
-
-  --antique-text-color: #5d4037; /* 濃い茶色 (アンティークな文字色) */
-  --antique-border-color: #dcd0b8; /* 枠線 (古びた紙の縁のような色) */
-  --antique-hover-bg-color: #efebe9; /* ホバー時の背景 (薄いベージュ) */
-
+  /* react-day-picker シンプルテーマ用変数 */
+  --rdp-cell-size: 36px; /* 日付セルのサイズ */
+  --rdp-accent-color: #22c55e; /* Tailwind green-500 (選択された日など) */
+  --rdp-background-color: #ffffff; /* カレンダーの背景色 (白) */
+  
   /* ダークモード用 */
-  --antique-text-color-dark: #d7ccc8;
-  --antique-border-color-dark: #5a503a;
-  --antique-hover-bg-color-dark: #4a4a4a;
+  --rdp-accent-color-dark: #22c55e; /* Tailwind green-500 */
+  --rdp-background-color-dark: #1f2937; /* Tailwind gray-800 (カレンダー背景) */
+  --rdp-color-dark: #e5e7eb; /* ダークモード時のカレンダー内テキスト色 */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --page-bg-rgb: 31, 41, 55;    /* Tailwind CSSのgray-700かgray-800相当 */
-    --page-text-rgb: 229, 231, 235; /* Tailwind CSSのgray-200相当 */
+    --page-bg-rgb: 31, 41, 55;
+    --page-text-rgb: 229, 231, 235;
   }
 }
 
 body {
   background-color: rgb(var(--page-bg-rgb));
   color: rgb(var(--page-text-rgb));
-  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; /* Interフォントを優先 */
+  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-/* --- react-day-picker アンティーク風スタイル --- */
-.rdp {
-  margin: 0.5em auto; /* 中央寄せしやすく */
-  font-family: var(--font-eb-garamond), serif; /* アンティーク風フォント */
-  border: 1px solid var(--antique-border-color);
-  border-radius: 0.25rem; /* 少しだけ丸み */
+/* --- react-day-picker シンプルスタイル --- */
+/* 'react-day-picker/dist/style.css' で基本スタイルが読み込まれている前提 */
+
+.rdp { /* カレンダー全体のコンテナ */
+  margin: 0.5em 0; /* ポップアップなので左右のautoは不要かも */
   background-color: var(--rdp-background-color);
-  color: var(--antique-text-color);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border-radius: 0.375rem; /* rounded-md */
+  padding: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-md */
+  border: 1px solid #e5e7eb; /* Tailwind gray-200 */
+  /* アンティーク風フォントの指定を解除 (必要なら --font-inter を使うなど) */
+  /* font-family: var(--font-eb-garamond), serif; */
 }
 
 .dark .rdp {
-  border-color: var(--antique-border-color-dark);
   background-color: var(--rdp-background-color-dark);
-  color: var(--antique-text-color-dark);
+  color: var(--rdp-color-dark);
+  border-color: #374151; /* Tailwind gray-700 */
 }
 
-/* キャプション (例: 2025年 5月) */
-.rdp-caption_label {
-  font-size: 1.1em;
-  font-weight: bold;
-  color: inherit; /* 親要素の色を継承 */
-  z-index: 1; /* ドロップダウンより手前に */
-  position: relative;
-}
-.rdp-caption_dropdowns { /* 年月ドロップダウンコンテナ */
-  position: relative; /* キャプションラベルより手前に来るように調整 */
-  z-index: 2;
-}
-
-
-/* ナビゲーションボタン (前月/次月) */
-.rdp-nav_button {
-  border-radius: 0.25rem;
-  padding: 0.3em 0.5em;
-  color: inherit;
-  border: 1px solid transparent; /* 通常時は枠線なし */
-}
-.rdp-nav_button:hover {
-  background-color: var(--antique-hover-bg-color) !important;
-  border-color: var(--antique-border-color) !important;
-}
-.dark .rdp-nav_button:hover {
-  background-color: var(--antique-hover-bg-color-dark) !important;
-  border-color: var(--antique-border-color-dark) !important;
-}
-
-/* 日付セル */
-.rdp-day {
-  border-radius: 20%; /* 少し丸み */
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-.rdp-day:hover:not(.rdp-day_disabled) {
-  background-color: var(--antique-hover-bg-color) !important;
-}
-.dark .rdp-day:hover:not(.rdp-day_disabled) {
-  background-color: var(--antique-hover-bg-color-dark) !important;
-}
-
-
-/* 選択された日のスタイル */
-.rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
+/* 選択された日のスタイル (アクセントカラーを適用) */
+.rdp-day_selected,
+.rdp-day_selected:focus-visible,
+.rdp-day_selected:hover {
   background-color: var(--rdp-accent-color) !important;
-  color: var(--rdp-selected-color) !important;
-  font-weight: bold;
-  border: 1px solid var(--rdp-accent-color) !important;
+  color: white !important; /* 選択された日の文字色 */
+  border-radius: 0.25rem; /* 少し丸み */
 }
-.dark .rdp-day_selected, .dark .rdp-day_selected:focus-visible, .dark .rdp-day_selected:hover {
+.dark .rdp-day_selected,
+.dark .rdp-day_selected:focus-visible,
+.dark .rdp-day_selected:hover {
   background-color: var(--rdp-accent-color-dark) !important;
-  color: var(--rdp-selected-color-dark) !important;
-  border-color: var(--rdp-accent-color-dark) !important;
 }
 
-/* 今日の日のスタイル */
+/* 今日の日付 (デフォルトのスタイルが良い場合が多いので、特に指定しないか、控えめに) */
 .rdp-day_today {
-  font-weight: bold;
-  /* color: var(--rdp-accent-color); */ /* 強調しすぎないように、アクセントカラーは選択日に使う */
-  border: 1px dashed var(--antique-border-color); /* 今日を点線で囲む */
+  font-weight: normal; /* 太字解除 (デフォルトに合わせるか、お好みで) */
+  color: var(--rdp-accent-color); /* もし今日の日付もテーマカラーにしたい場合 */
 }
 .dark .rdp-day_today {
-  /* color: var(--rdp-accent-color-dark); */
-  border: 1px dashed var(--antique-border-color-dark);
+  color: var(--rdp-accent-color-dark);
 }
 
-/* 無効な日付 */
-.rdp-day_disabled {
-  color: #a0a0a0a0; /* 少し薄く */
-  text-decoration: line-through;
-}
-.dark .rdp-day_disabled {
-  color: #707070a0;
-}
+/* 月ナビゲーションボタンなど、他の細かいスタイルは */
+/* 'react-day-picker/dist/style.css' のデフォルトを活かすか、必要に応じて最小限の調整を */
 
-/* 年月ドロップダウン */
-.rdp-dropdown {
-  padding: 0.2em;
-  border: 1px solid var(--antique-border-color);
-  border-radius: 0.25rem;
-  background-color: var(--rdp-background-color);
-  font-family: var(--font-eb-garamond), serif; /* ドロップダウン内もフォント適用 */
-  color: var(--antique-text-color);
-  margin: 0 0.1em;
-  box-shadow: none; /* デフォルトの影を消す */
-}
-.dark .rdp-dropdown {
-  background-color: var(--rdp-background-color-dark);
-  border-color: var(--antique-border-color-dark);
-  color: var(--antique-text-color-dark);
-}
-
-/* カレンダー入力欄の親要素に position: relative; が必要です */
-/* カレンダーが表示されるときのコンテナ */
+/* カレンダーポップアップのコンテナスタイル */
 .calendar-popover {
   position: absolute;
-  z-index: 20; /* 他の要素より手前に */
-  margin-top: 0.25rem; /* 入力欄との隙間 */
-  /* rdpのスタイルで背景や枠線は設定される */
+  z-index: 20; /* 他の要素より手前に表示 */
+  margin-top: 0.25rem; /* 入力欄との間に少し隙間 */
+  /* .rdp のスタイルで背景や枠線、影が適用される */
 }
