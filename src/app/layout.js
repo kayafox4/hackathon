@@ -1,20 +1,22 @@
+// src/app/layout.jsx
 import './globals.css';
-import { Inter } from 'next/font/google';
-import NextAuthProvider from '@/providers/NextAuth'; // src/providers を参照
-
-const inter = Inter({ subsets: ['latin'] });
-
-export const metadata = {
-    title: 'バス予約アプリ', // タイトルを分かりやすく変更
-    description: 'Next.jsとNextAuth.jsによるバス予約アプリ', // 説明を分かりやすく変更
-};
+import NavigationBar from './components/NavigationBar'; // NavigationBarをインポート
+import AuthProvider from './providers/AuthProvider'; // AuthProviderをインポート (もしあれば)
 
 export default function RootLayout({ children }) {
-    return (
-        <html lang="ja"> {/* langを'ja'に修正 */}
-            <body className={inter.className}>
-                <NextAuthProvider>{children}</NextAuthProvider>
-            </body>
-        </html>
-    );
+  return (
+    <html lang="ja">
+      <body>
+        {/* NextAuth.jsを使用している場合、AuthProviderで全体を囲む必要があります */}
+        <AuthProvider>
+          {/* メインコンテンツ */}
+          <main className="min-h-screen pb-20"> {/* ナビゲーションバーの高さ分だけ下部にパディング */}
+            {children}
+          </main>
+          {/* ナビゲーションバーを最下部に固定表示 */}
+          <NavigationBar />
+        </AuthProvider>
+      </body>
+    </html>
+  );
 }

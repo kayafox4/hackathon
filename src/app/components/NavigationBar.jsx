@@ -17,7 +17,7 @@ export default function NavigationBar() {
     { href: '/', label: 'ホーム', Icon: HomeIcon },
     { href: '/bookings', label: '予約', Icon: TicketIcon },
     { href: '/history', label: '履歴', Icon: CalendarDaysIcon },
-    { href: '/test', label: 'テスト', Icon: UserCircleIcon },
+    { href: '/test', label: 'アカウント', Icon: UserCircleIcon },
   ];
 
   return (
