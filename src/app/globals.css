@@ -70,3 +70,50 @@ body {
   background-color: var(--rdp-background-color-dark) !important; // ダークモード用
 }
 */
+.rdp-day {
+  /* ライトモード時のカレンダー背景色をデフォルトとして設定 */
+  /* background-color: var(--rdp-background-color); */ 
+  /* ↑ これを直接指定すると、ホバーなどの効果と競合する可能性があるので注意。
+     dist/style.css が正しく読み込まれていれば、通常は不要です。
+     もし dist/style.css が効いていない場合の最終手段に近い。*/
+  border-radius: 0.25rem; /* 他の要素との一貫性のため */
+}
+/* ダークモード時は、.dark .rdp-day で同様に指定 */
+/* .dark .rdp-day {
+  background-color: var(--rdp-background-color-dark);
+} */
+
+
+/* 選択された日 */
+.rdp-day_selected,
+.rdp-day_selected:focus-visible,
+.rdp-day_selected:hover {
+  background-color: var(--rdp-accent-color) !important;
+  color: white !important;
+  border-radius: 0.25rem;
+}
+.dark .rdp-day_selected,
+.dark .rdp-day_selected:focus-visible,
+.dark .rdp-day_selected:hover {
+  background-color: var(--rdp-accent-color-dark) !important;
+}
+
+/* 今日の日付 (選択されていない場合) */
+.rdp-day_today:not(.rdp-day_selected) {
+  font-weight: bold; /* やはり今日の日付は太字の方が見やすいかも */
+  color: var(--rdp-accent-color);
+  background-color: transparent; /* 背景は透明にして、下の.rdpの背景を見せるか、独自の薄い色をつける */
+                                /* しかし、これが rgba(0,0,0,0) の原因になっているなら、
+                                   dist/style.css が適用されていないことを示唆します */
+}
+.dark .rdp-day_today:not(.rdp-day_selected) {
+  color: var(--rdp-accent-color-dark);
+}
+
+/* ホバー時のスタイル (選択されておらず、無効でもない日) */
+.rdp-day:not([disabled]):not(.rdp-day_selected):hover {
+  background-color: #f0f0f0 !important; /* 例: 薄いグレー */
+}
+.dark .rdp-day:not([disabled]):not(.rdp-day_selected):hover {
+  background-color: #3a3a3a !important; /* 例: ダークモード用の少し濃いグレー */
+}
