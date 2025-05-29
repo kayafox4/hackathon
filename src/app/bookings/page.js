@@ -1,39 +1,32 @@
-// src/app/bookings/page.jsx
+// src/app/bookings/page.js (修正後)
 
-'use client'; // Client Component に変更 (usePathname などを使用する場合)
+// 'use client'; を削除
 
-import { PrismaClient } from '@prisma/client';
-import NavigationBar from '../components/NavigationBar'; // ナビゲーションバーをインポート
+// PrismaClientのインポートとインスタンス化を削除
+// import { PrismaClient } from '@prisma/client';
+// const prisma = new PrismaClient();
 
-// PrismaClient のインスタンスは、本番環境ではグローバルなシングルトンとして扱うのがベストプラクティスです。
-// 開発中は問題ありませんが、デプロイ時に警告が出ることがあります。
-// 詳細は Prisma 公式ドキュメントの「Best practices for instantiating PrismaClient」を参照してください。
-const prisma = new PrismaClient();
+import NavigationBar from '../components/NavigationBar';
+import { getBookings as fetchServerBookings } from '../actions/booking'; // Server Actionをインポート
 
-async function getBookings() {
-  // これは Server Component の中で呼び出されるべきです。
-  // 'use client' を追加したため、この関数はクライアントサイドで呼び出されることになります。
-  // Next.jsのApp Routerでは、データフェッチはServer Componentで行うのが推奨です。
-  // ここをクライアントサイドでフェッチすると、APIルート（/api/bookingsなど）を別途用意してFetch APIで呼び出す必要があります。
-  // 現状は、ビルド時のPrerenderingでデータが取得されますが、実行時にも必要なら工夫が必要です。
-  try {
-    const bookings = await prisma.booking.findMany({
-      orderBy: [
-        { bookingDate: 'asc' },
-        { bookingTime: 'asc' },
-      ],
-    });
-    return bookings;
-  } catch (error) {
-    console.error("Failed to fetch bookings:", error);
-    return []; // エラー時は空の配列を返す
-  } finally {
-    await prisma.$disconnect(); // 接続を閉じる (Vercel Lambdaには推奨)
-  }
-}
+// ローカルのgetBookings関数を削除
 
 export default async function BookingsPage() {
-  const bookings = await getBookings(); // ビルド時に実行される
+  // Server Actionを呼び出してデータを取得
+  const { success, bookings, message } = await fetchServerBookings();
+
+  if (!success) {
+    // エラーハンドリング（例: エラーメッセージを表示）
+    return (
+      <div className="flex flex-col min-h-screen">
+        <main className="flex-grow flex flex-col items-center p-24">
+          <h1 className="text-4xl font-bold mb-8">予約一覧</h1>
+          <p>予約情報の読み込みに失敗しました: {message || '不明なエラー'}</p>
+        </main>
+        <NavigationBar />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
