@@ -1,7 +1,7 @@
 // src/app/layout.js
 import './globals.css';
 import { Inter, EB_Garamond } from 'next/font/google'; // EB_Garamond を追加
-import NextAuthProvider from '@/providers/NextAuth';
+import NextAuthProvider from '@/app/providers/NextAuth';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
