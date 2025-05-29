@@ -1,8 +1,8 @@
 // src/app/bookings/page.jsx
 'use client';
 
-import { useState } from 'react';
-import BusStopInput from '@/app/components/BusStopInput'; // BusStopInput コンポーネントをインポート
+import { useState, useEffect } from 'react'; // useEffect を追加
+import BusStopInput from '@/app/components/BusStopInput';
 
 export default function BookingsPage() {
   const [departureBusStop, setDepartureBusStop] = useState('');
@@ -11,14 +11,62 @@ export default function BookingsPage() {
   const [selectedTime, setSelectedTime] = useState('');
   const [passengerType, setPassengerType] = useState('person'); // 'person' (人) または 'item' (物)
 
+  // 日付のオプションを生成する関数
+  const generateDateOptions = () => {
+    const options = [];
+    const today = new Date();
+    // 今日から30日後までの日付を生成
+    for (let i = 0; i < 31; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()];
+      const value = `${year}-${month}-${day}`;
+      const label = `${year}年${month}月${day}日(${dayOfWeek})`;
+      options.push({ value, label });
+    }
+    return options;
+  };
+
+  // 時間のオプションを生成する関数 (00:00 - 23:30 を30分刻み)
+  const generateTimeOptions = () => {
+    const options = [];
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += 30) {
+        const hour = String(h).padStart(2, '0');
+        const minute = String(m).padStart(2, '0');
+        const value = `${hour}:${minute}`;
+        options.push({ value, label: value });
+      }
+    }
+    return options;
+  };
+
+  const dateOptions = generateDateOptions();
+  const timeOptions = generateTimeOptions();
+
+  // 「現在時刻」ボタンが押された時の処理
+  const handleSetCurrentDateTime = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(Math.floor(now.getMinutes() / 30) * 30).padStart(2, '0'); // 最も近い30分単位に丸める
+
+    setSelectedDate(`${year}-${month}-${day}`);
+    setSelectedTime(`${hours}:${minutes}`);
+  };
+
+  // 初期ロード時に現在時刻を選択するように設定 (オプション)
+  // useEffect(() => {
+  //   handleSetCurrentDateTime();
+  // }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // 予約処理のロジックをここに記述
-    console.log('出発バス停:', departureBusStop);
-    console.log('到着バス停:', arrivalBusStop);
-    console.log('日付:', selectedDate);
-    console.log('時間:', selectedTime);
-    console.log('乗車タイプ:', passengerType === 'person' ? '人' : '物');
 
     if (!departureBusStop || !arrivalBusStop || !selectedDate || !selectedTime) {
       alert('すべての必須項目を入力してください。');
@@ -33,7 +81,7 @@ export default function BookingsPage() {
       `日付: ${selectedDate}\n` +
       `時間: ${selectedTime}\n` +
       `乗車タイプ: ${passengerType === 'person' ? '人' : '物'}\n` +
-      `予約を完了しました！`
+      `予約を完了します。`
     );
     // フォームをリセットしたい場合は以下をコメント解除
     // setDepartureBusStop('');
@@ -41,15 +89,6 @@ export default function BookingsPage() {
     // setSelectedDate('');
     // setSelectedTime('');
     // setPassengerType('person');
-  };
-
-  // 今日の日付を取得して、カレンダーの最小値に設定
-  const getTodayDate = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0'); // 月は0から始まるため+1
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
   };
 
   return (
@@ -73,32 +112,53 @@ export default function BookingsPage() {
           placeholder="例: びわ湖ホール"
         />
 
-        {/* 日時入力フィールド */}
+        {/* 日付選択フィールド (スクロール形式) */}
         <div className="mb-4">
-          <label htmlFor="bookingDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            日付
-          </label>
-          <input
+          <div className="flex items-center justify-between mb-1">
+            <label htmlFor="bookingDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              日付
+            </label>
+            <button
+              type="button"
+              onClick={handleSetCurrentDateTime}
+              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 text-xs font-semibold"
+            >
+              現在時刻
+            </button>
+          </div>
+          <select
             id="bookingDate"
-            type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            min={getTodayDate()} // 今日の日付より前の日付を選択できないようにする
             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-          />
+          >
+            <option value="" disabled>日付を選択</option>
+            {dateOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
 
+        {/* 時間選択フィールド (スクロール形式) */}
         <div className="mb-6">
           <label htmlFor="bookingTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             時間
           </label>
-          <input
+          <select
             id="bookingTime"
-            type="time"
             value={selectedTime}
             onChange={(e) => setSelectedTime(e.target.value)}
             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-          />
+          >
+            <option value="" disabled>時間を選択</option>
+            {timeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* 乗車タイプ選択ボタン (人/物) */}
