@@ -1,13 +1,11 @@
 // src/app/bookings/page.js
 'use client';
 
-import { useState } from 'react'; // useEffectは現在未使用なので削除も可
+import { useState } from 'react';
 import BusStopInput from '@/app/components/BusStopInput';
-// --- サーバーアクションとセッションのために追加 ---
 import { useSession } from 'next-auth/react';
-import { createBooking } from '../actions/booking'; // 実際の予約処理のため
+import { createBooking } from '../actions/booking';
 
-// --- 予約番号生成関数 (以前の提案より) ---
 function generateBookingNumber() {
   return `BK-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`;
 }
@@ -20,23 +18,21 @@ export default function BookingsPage() {
   const [selectedMinute, setSelectedMinute] = useState('');
   const [passengerType, setPassengerType] = useState('person');
 
-  // --- サーバーアクション連携のためのstate ---
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [formMessage, setFormMessage] = useState({ type: '', text: '' });
 
-  // 日付のオプションを生成する関数 (今日から3ヶ月後まで)
   const generateDateOptions = () => {
     const options = [];
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // 時刻をリセットして日付のみで比較
+    today.setHours(0, 0, 0, 0);
 
     const threeMonthsLater = new Date(today);
     threeMonthsLater.setMonth(today.getMonth() + 3);
 
     let currentDate = new Date(today);
-    let count = 0; // 念のため無限ループを防ぐカウンター
-    while (currentDate.getTime() <= threeMonthsLater.getTime() && count < 93) { // 約3ヶ月分
+    let count = 0;
+    while (currentDate.getTime() <= threeMonthsLater.getTime() && count < 93) {
       const year = currentDate.getFullYear();
       const month = String(currentDate.getMonth() + 1).padStart(2, '0');
       const day = String(currentDate.getDate()).padStart(2, '0');
@@ -44,14 +40,12 @@ export default function BookingsPage() {
       const value = `${year}-${month}-${day}`;
       const label = `${year}年${month}月${day}日(${dayOfWeek})`;
       options.push({ value, label });
-
       currentDate.setDate(currentDate.getDate() + 1);
       count++;
     }
     return options;
   };
 
-  // 時間のオプションを生成する関数 (0-23)
   const generateHourOptions = () => {
     const options = [];
     for (let h = 0; h < 24; h++) {
@@ -61,7 +55,6 @@ export default function BookingsPage() {
     return options;
   };
 
-  // 分のオプションを生成する関数 (0-59)
   const generateMinuteOptions = () => {
     const options = [];
     for (let m = 0; m < 60; m++) {
@@ -88,7 +81,6 @@ export default function BookingsPage() {
     setSelectedMinute(minutes);
   };
 
-  // --- handleSubmitをサーバーアクション呼び出しに変更 ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormMessage({ type: '', text: '' });
@@ -97,14 +89,11 @@ export default function BookingsPage() {
       setFormMessage({ type: 'error', text: 'すべての必須項目を入力してください。' });
       return;
     }
-
     if (!session?.user?.email) {
       setFormMessage({ type: 'error', text: 'ログインしていません。ログインしてください。' });
       return;
     }
-
     setIsLoading(true);
-
     const formData = new FormData();
     formData.append('bookingNumber', generateBookingNumber());
     formData.append('email', session.user.email);
@@ -113,7 +102,6 @@ export default function BookingsPage() {
     formData.append('bookingDate', selectedDate);
     formData.append('bookingTime', `${selectedHour}:${selectedMinute}`);
     formData.append('type', passengerType === 'person' ? 'PERSON' : 'LUGGAGE');
-
     try {
       const result = await createBooking(formData);
       if (result.success && result.booking) {
@@ -121,13 +109,6 @@ export default function BookingsPage() {
           type: 'success',
           text: `予約が完了しました！ (予約番号: ${result.booking.bookingNumber})`,
         });
-        // 必要に応じてフォームをリセット
-        // setDepartureBusStop('');
-        // setArrivalBusStop('');
-        // setSelectedDate('');
-        // setSelectedHour('');
-        // setSelectedMinute('');
-        // setPassengerType('person');
       } else {
         setFormMessage({ type: 'error', text: result.message || '予約の作成に失敗しました。' });
       }
@@ -142,9 +123,7 @@ export default function BookingsPage() {
   return (
     <div className="min-h-screen p-4 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
       <h1 className="text-3xl font-bold mb-6 text-center text-green-700 dark:text-green-300">バス予約</h1>
-
       <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-xl w-full max-w-md mx-auto">
-        {/* --- 結果メッセージ表示 --- */}
         {formMessage.text && (
           <div
             className={`p-3 rounded-md text-sm mb-4 ${
@@ -156,7 +135,6 @@ export default function BookingsPage() {
             {formMessage.text}
           </div>
         )}
-
         <BusStopInput
           label="出発バス停"
           value={departureBusStop}
@@ -169,7 +147,6 @@ export default function BookingsPage() {
           onChange={setArrivalBusStop}
           placeholder="例: びわ湖ホール"
         />
-
         <div className="mb-4">
           <div className="flex items-center justify-between mb-1">
             <label htmlFor="bookingDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -187,9 +164,11 @@ export default function BookingsPage() {
             id="bookingDate"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 h-60"
-            size={10} // スクロール表示
-            required // 必須項目
+            // --- 修正点 ---
+            // classNameの h-60 を削除 (高さ固定をやめる)
+            // size={10} を削除 (リストボックス表示をやめる)
+            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            required
           >
             <option value="" disabled>日付を選択</option>
             {dateOptions.map((option) => (
@@ -199,7 +178,6 @@ export default function BookingsPage() {
             ))}
           </select>
         </div>
-
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             時間
@@ -209,9 +187,11 @@ export default function BookingsPage() {
               id="bookingHour"
               value={selectedHour}
               onChange={(e) => setSelectedHour(e.target.value)}
-              className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 h-60"
-              size={10} // スクロール表示
-              required // 必須項目
+              // --- 修正点 ---
+              // classNameの h-60 を削除
+              // size={10} を削除
+              className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              required
             >
               <option value="" disabled>時</option>
               {hourOptions.map((option) => (
@@ -224,9 +204,11 @@ export default function BookingsPage() {
               id="bookingMinute"
               value={selectedMinute}
               onChange={(e) => setSelectedMinute(e.target.value)}
-              className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 h-60"
-              size={10} // スクロール表示
-              required // 必須項目
+              // --- 修正点 ---
+              // classNameの h-60 を削除
+              // size={10} を削除
+              className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              required
             >
               <option value="" disabled>分</option>
               {minuteOptions.map((option) => (
@@ -237,7 +219,6 @@ export default function BookingsPage() {
             </select>
           </div>
         </div>
-
         <div className="mb-6">
           <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             乗車するもの
@@ -271,13 +252,12 @@ export default function BookingsPage() {
             </button>
           </div>
         </div>
-
         <button
           type="submit"
-          disabled={isLoading} // ローディング中は無効化
+          disabled={isLoading}
           className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-md transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? '予約処理中...' : 'バスを予約する'} {/* ボタンテキスト変更とローディング表示 */}
+          {isLoading ? '予約処理中...' : 'バスを予約する'}
         </button>
       </form>
     </div>
