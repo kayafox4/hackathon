@@ -1,30 +1,38 @@
-/* src/app/globals.css (カレンダースタイルをシンプル化) */
+/* src/app/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   /* Light Mode */
-  --page-bg-rgb: 255, 255, 255; /* 白色のページ背景 */
-  --page-text-rgb: 17, 24, 39;  /* Tailwind gray-800相当の文字色 */
+  --page-bg-rgb: 249, 250, 251; /* Tailwind gray-50 */
+  --page-text-rgb: 17, 24, 39;  /* Tailwind gray-800 */
+  --card-bg-rgb: 255, 255, 255; /* カード等の背景 (白) */
+  --border-color-rgb: 229, 231, 235; /* Tailwind gray-200 */
 
-  /* react-day-picker用（シンプルテーマ） */
+  /* react-day-picker用 */
   --rdp-cell-size: 36px;
-  --rdp-accent-color: #22c55e; /* アプリのテーマグリーン (例: Tailwind green-500) */
-  --rdp-background-color: #ffffff; /* カレンダーの背景は白 */
+  --rdp-accent-color: #22c55e; /* アプリのテーマグリーン (Tailwind green-500) */
   --rdp-selected-color: #ffffff; /* 選択された日付の文字色 (白) */
+  /* カレンダーポップアップの背景は var(--card-bg-rgb) を使う */
   
-  /* ダークモード時の react-day-picker 用変数 */
-  --rdp-accent-color-dark: #22c55e; /* ダークモードでも同じ緑、または少し明るく調整 */
-  --rdp-background-color-dark: #1f2937; /* Tailwind gray-800 相当 */
-  --rdp-color-dark: #e5e7eb; /* ダークモード時のカレンダー内文字色 */
+  /* ダークモード時の変数 */
+  --page-bg-rgb-dark: 17, 24, 39; /* Tailwind gray-900 */
+  --page-text-rgb-dark: 229, 231, 235; /* Tailwind gray-200 */
+  --card-bg-rgb-dark: 31, 41, 55;   /* Tailwind gray-800 */
+  --border-color-rgb-dark: 55, 65, 81; /* Tailwind gray-700 */
+
+  --rdp-accent-color-dark: #22c55e;
   --rdp-selected-color-dark: #ffffff;
+  --rdp-color-dark: var(--page-text-rgb-dark); /* カレンダー内テキスト色 */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --page-bg-rgb: 31, 41, 55;    /* Tailwind gray-700/800 */
-    --page-text-rgb: 229, 231, 235; /* Tailwind gray-200 */
+    --page-bg-rgb: var(--page-bg-rgb-dark);
+    --page-text-rgb: var(--page-text-rgb-dark);
+    --card-bg-rgb: var(--card-bg-rgb-dark);
+    --border-color-rgb: var(--border-color-rgb-dark);
   }
 }
 
@@ -34,77 +42,47 @@ body {
   font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-/* --- react-day-picker シンプルなスタイル調整 --- */
-/* 'react-day-picker/dist/style.css' が基本スタイルを提供します */
+/* --- react-day-picker シンプルスタイル --- */
+/* 'react-day-picker/dist/style.css' が基本スタイルを提供 */
 
-/* カレンダーポップアップのコンテナ */
+/* カレンダーポップアップのコンテナ (ここに背景色とスタイルを集約) */
 .calendar-popover {
   position: absolute;
-  z-index: 20; /* 他の要素より手前に */
+  z-index: 50; /* 他の要素より確実に手前に */
   margin-top: 0.25rem; /* 入力欄との隙間 */
-  /* DayPicker自体が影や枠線を持つので、ここでは不要な場合も */
-  /* box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); */
-  /* border-radius: 0.375rem; */
+  background-color: rgb(var(--card-bg-rgb)); /* ★重要: ポップアップ自体に背景色 */
+  border-radius: 0.375rem; /* rounded-md */
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); /* shadow-lg */
+  border: 1px solid rgb(var(--border-color-rgb));
+  padding: 0.5rem; /* カレンダー本体のための内側パディング */
 }
 
-/* DayPickerのルート要素 (.rdp) のスタイルは、dist/style.cssに任せるか、
-   どうしても上書きしたい最小限のものだけにする。
-   dist/style.cssが背景白の不透明なカレンダーを提供してくれるはずです。
-   もしアクセントカラーだけ変えたい場合は、:root で --rdp-accent-color を上書きすればOKです。
-*/
-
-/* 例：ダークモードの時だけ、DayPickerのデフォルトの文字色や背景色をCSS変数で上書き */
-.dark .rdp {
-  --rdp-accent-color: var(--rdp-accent-color-dark);
-  --rdp-background-color: var(--rdp-background-color-dark);
-  --rdp-color: var(--rdp-color-dark); /* カレンダー内のデフォルト文字色 */
-  --rdp-selected-color: var(--rdp-selected-color-dark);
-}
-
-/* もし、dist/style.css の背景が何らかの理由で透明になってしまう場合は、
-   以下のように明示的に背景色を設定する必要があるかもしれません。
+/* DayPickerのルート要素 (.rdp) は、popoverが背景を持つのでシンプルに */
 .rdp {
-  background-color: var(--rdp-background-color) !important; // ライトモード用
+  margin: 0; 
 }
-.dark .rdp {
-  background-color: var(--rdp-background-color-dark) !important; // ダークモード用
-}
-*/
-.rdp-day {
-  /* ライトモード時のカレンダー背景色をデフォルトとして設定 */
-  /* background-color: var(--rdp-background-color); */ 
-  /* ↑ これを直接指定すると、ホバーなどの効果と競合する可能性があるので注意。
-     dist/style.css が正しく読み込まれていれば、通常は不要です。
-     もし dist/style.css が効いていない場合の最終手段に近い。*/
-  border-radius: 0.25rem; /* 他の要素との一貫性のため */
-}
-/* ダークモード時は、.dark .rdp-day で同様に指定 */
-/* .dark .rdp-day {
-  background-color: var(--rdp-background-color-dark);
-} */
 
-
-/* 選択された日 */
+/* 選択された日のスタイル */
 .rdp-day_selected,
 .rdp-day_selected:focus-visible,
 .rdp-day_selected:hover {
   background-color: var(--rdp-accent-color) !important;
-  color: white !important;
+  color: var(--rdp-selected-color) !important;
   border-radius: 0.25rem;
 }
 .dark .rdp-day_selected,
 .dark .rdp-day_selected:focus-visible,
 .dark .rdp-day_selected:hover {
   background-color: var(--rdp-accent-color-dark) !important;
+  color: var(--rdp-selected-color-dark) !important;
 }
 
 /* 今日の日付 (選択されていない場合) */
 .rdp-day_today:not(.rdp-day_selected) {
-  font-weight: bold; /* やはり今日の日付は太字の方が見やすいかも */
-  color: var(--rdp-accent-color);
-  background-color: transparent; /* 背景は透明にして、下の.rdpの背景を見せるか、独自の薄い色をつける */
-                                /* しかし、これが rgba(0,0,0,0) の原因になっているなら、
-                                   dist/style.css が適用されていないことを示唆します */
+  font-weight: bold;
+  color: var(--rdp-accent-color); /* テーマカラーで今日を少し目立たせる */
+  /* background-color: transparent; を指定しないことで、下の背景が見えるのを防ぐ */
+  /* dist/style.css のデフォルトが適用されるか、.rdpの背景が透ける */
 }
 .dark .rdp-day_today:not(.rdp-day_selected) {
   color: var(--rdp-accent-color-dark);
@@ -112,8 +90,8 @@ body {
 
 /* ホバー時のスタイル (選択されておらず、無効でもない日) */
 .rdp-day:not([disabled]):not(.rdp-day_selected):hover {
-  background-color: #f0f0f0 !important; /* 例: 薄いグレー */
+  background-color: rgba(var(--page-text-rgb), 0.05) !important; /* 薄いホバー色 */
 }
 .dark .rdp-day:not([disabled]):not(.rdp-day_selected):hover {
-  background-color: #3a3a3a !important; /* 例: ダークモード用の少し濃いグレー */
+  background-color: rgba(var(--page-text-rgb-dark), 0.1) !important;
 }

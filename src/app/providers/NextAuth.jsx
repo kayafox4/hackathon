@@ -1,10 +1,13 @@
-'use client'; // Client Component
+// src/app/providers/NextAuth.jsx
+'use client';
 
 import { SessionProvider } from 'next-auth/react';
-// import { ReactNode } from 'react'; // JavaScriptファイルでは不要
+import React from 'react';
 
-const NextAuthProvider = ({ children }) => {
-    return <SessionProvider>{children}</SessionProvider>;
-};
-
-export default NextAuthProvider;
+export default function NextAuthProvider({ children, session }) {
+  return (
+    <SessionProvider session={session}>
+      {children}
+    </SessionProvider>
+  );
+}

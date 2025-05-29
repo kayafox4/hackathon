@@ -1,8 +1,8 @@
-// src/app/layout.js (シンプル版)
+// src/app/layout.js
 import './globals.css';
 import { Inter } from 'next/font/google';
-import NextAuthProvider from '@/app/providers/NextAuth'; // このパスが実際の場所と合っているか確認
-import NavigationBar from '@/app/components/NavigationBar'; // NavigationBarをインポート
+import NextAuthProvider from '@/app/providers/NextAuth'; // 実際のパスを確認してください
+import NavigationBar from '@/app/components/NavigationBar'; // 実際のパスを確認してください
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -13,11 +13,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    // アンティーク風フォントのクラス指定を削除 (例: ebGaramond.variable)
     <html lang="ja" className={inter.variable}>
-      <body className="flex flex-col min-h-screen"> {/* ナビゲーションバーを固定する場合の一般的な構成 */}
+      <body className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900"> {/* 全体の背景色をここで指定 */}
         <NextAuthProvider>
-          <main className="flex-grow pb-20"> {/* メインコンテンツ。pb-20 はナビゲーションバーの高さ分の目安 */}
+          <main className="flex-grow pt-4 pb-20 sm:pb-24 px-2 sm:px-4"> {/* 上下にパディング、下はナビゲーションバーの分 */}
             {children}
           </main>
           <NavigationBar />

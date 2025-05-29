@@ -11,7 +11,6 @@ import 'react-day-picker/dist/style.css'; // ★★★ これが非常に重要�
 import { format as formatDateFn, addMonths, isValid as isValidDate, startOfDay } from 'date-fns';
 import { ja } from 'date-fns/locale';
 
-// 予約番号生成関数
 function generateBookingNumber() {
   return `BK-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`;
 }
@@ -21,7 +20,7 @@ export default function BookingsPage() {
   const [arrivalBusStop, setArrivalBusStop] = useState('');
   const [selectedDate, setSelectedDate] = useState(undefined); 
   const [showCalendar, setShowCalendar] = useState(false);
-  const calendarContainerRef = useRef(null); // カレンダーとトリガーの親要素のref
+  const calendarContainerRef = useRef(null);
 
   const [selectedHour, setSelectedHour] = useState('');
   const [selectedMinute, setSelectedMinute] = useState('');
@@ -31,7 +30,6 @@ export default function BookingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [formMessage, setFormMessage] = useState({ type: '', text: '' });
 
-  // 時間・分オプション生成 (変更なし)
   const generateHourOptions = () => {
     const options = [];
     for (let h = 0; h < 24; h++) options.push({ value: String(h).padStart(2, '0'), label: String(h).padStart(2, '0') });
@@ -45,7 +43,6 @@ export default function BookingsPage() {
   const hourOptions = generateHourOptions();
   const minuteOptions = generateMinuteOptions();
   
-  // 日付選択・現在日時設定・フォーム送信ロジック (大きな変更なし)
   const handleDateSelect = (date) => {
     if (date) setSelectedDate(startOfDay(date));
     setShowCalendar(false);
@@ -119,13 +116,11 @@ export default function BookingsPage() {
   const threeMonthsFromToday = addMonths(today, 3);
 
   return (
-    <div className="min-h-screen p-4 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-      <h1 className="text-3xl font-bold mb-6 text-center text-green-700 dark:text-green-400"
-          // アンティークフォント指定は削除（または layout.js と globals.css の body で制御）
-      >
+    <div className="text-gray-800 dark:text-gray-200"> {/* min-h-screen は layout の body で対応 */}
+      <h1 className="text-3xl font-bold mb-6 text-center text-green-700 dark:text-green-400">
         バス予約
       </h1>
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md mx-auto border border-gray-200 dark:border-gray-700">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-xl w-full max-w-md mx-auto border border-gray-200 dark:border-gray-600">
         {formMessage.text && (
           <div className={`p-3 rounded-md text-sm mb-4 ${formMessage.type === 'success' ? 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-100' : 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-100'}`}>
             {formMessage.text}
@@ -155,7 +150,7 @@ export default function BookingsPage() {
             required
           />
           {showCalendar && (
-            <div className="calendar-popover"> {/* globals.css の .calendar-popover で位置調整 */}
+            <div className="calendar-popover">
               <DayPicker
                 mode="single"
                 selected={selectedDate}
@@ -169,13 +164,11 @@ export default function BookingsPage() {
                 toYear={threeMonthsFromToday.getFullYear()}
                 showOutsideDays
                 initialFocus={showCalendar}
-                // modifiersClassNames や classNames は削除 (シンプルスタイルのため)
               />
             </div>
           )}
         </div>
 
-        {/* 時間と分選択 (変更なし) */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">時間</label>
           <div className="flex space-x-2">
@@ -190,7 +183,6 @@ export default function BookingsPage() {
           </div>
         </div>
         
-        {/* 乗車タイプと送信ボタン (変更なし) */}
         <div className="mb-6">
           <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">乗車するもの</span>
           <div className="flex rounded-md shadow-sm">
@@ -202,7 +194,7 @@ export default function BookingsPage() {
           {isLoading ? '予約処理中...' : 'バスを予約する'}
         </button>
       </form>
-      {/* NavigationBar は RootLayout で描画される想定 */}
+      {/* NavigationBar は RootLayout で描画されるため、ここでは不要 */}
     </div>
   );
 }
