@@ -1,7 +1,7 @@
 // src/app/layout.jsx
 import './globals.css';
 import NavigationBar from './components/NavigationBar'; // NavigationBarをインポート
-import AuthProvider from './providers/AuthProvider'; // AuthProviderをインポート (もしあれば)
+import AuthProvider from './providers/NextAuth'; // AuthProviderをインポート (もしあれば)
 
 export default function RootLayout({ children }) {
   return (
