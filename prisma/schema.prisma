@@ -28,3 +28,29 @@ model Booking {
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 }
+
+model Notification {
+  id        String   @id @default(uuid())
+  userEmail String   // 通知を受け取るユーザーのメールアドレス
+  message   String   // 通知のメッセージ内容
+  link      String?  // 通知をクリックしたときの遷移先URL (例: /history/bookingId)
+  isRead    Boolean  @default(false) // 未読・既読の状態
+  createdAt DateTime @default(now()) // 作成日時
+  updatedAt DateTime @updatedAt
+
+  // どの予約に関連する通知か (任意)
+  bookingId String?  // 予約ID
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade) // 予約が削除されたら通知も削除 (必要に応じて変更)
+
+  @@index([userEmail, createdAt]) // ユーザーごと・作成日時順での検索を高速化
+  @@index([userEmail, isRead])    // ユーザーごと・未読/既読での検索を高速化
+}
+
+// 既存の Booking モデルに、関連する通知のリストを持たせる場合 (任意)
+// model Booking {
+//   id                String   @id @default(uuid())
+//   // ... 他のフィールド ...
+//   notifications     Notification[] // この予約に関連する通知のリスト
+//   createdAt         DateTime @default(now())
+//   updatedAt         DateTime @updatedAt
+// }
