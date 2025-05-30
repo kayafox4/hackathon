@@ -7,6 +7,10 @@ import Image from 'next/image'; // プロフィール画像表示のためにIma
 export default function AccountPage() {
   const { data: session, status } = useSession(); // セッション情報とステータスを取得
 
+  if (session && session.user) {
+      console.log('User image URL:', session.user.image);
+    }
+
   if (status === 'loading') {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4 text-gray-700 dark:text-gray-300">
