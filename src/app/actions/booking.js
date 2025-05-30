@@ -38,6 +38,26 @@ export async function createBooking(formData) {
         type: type,
       },
     });
+
+    // --- ↓↓↓ ここから通知作成処理を追加 ↓↓↓ ---
+    if (newBooking) {
+      try {
+        await prisma.notification.create({
+          data: {
+            userEmail: newBooking.email, // 予約者のメールアドレス
+            message: `新しい予約: ${departureBusStop} 発 ${arrivalBusStop} 行き (${formattedBookingDateForMessage} ${bookingTime})`,
+            link: `/history#booking-${newBooking.id}`, // 例: 履歴ページ内の該当予約へのリンク
+            bookingId: newBooking.id, // 作成された予約のIDを紐付ける
+          },
+        });
+        console.log('通知を作成しました for user:', newBooking.email);
+      } catch (notificationError) {
+        // 通知の作成に失敗しても、予約作成自体は成功しているので、エラーはログに出すだけにする (運用による)
+        console.error("通知の作成に失敗しました:", notificationError);
+      }
+    }
+    // --- ↑↑↑ 通知作成処理ここまで ↑↑↑ ---
+
     revalidatePath('/bookings'); 
     revalidatePath('/history');
     return { success: true, booking: newBooking };
