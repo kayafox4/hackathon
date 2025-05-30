@@ -77,7 +77,7 @@ export default async function HistoryPage() {
         </div>
       ) : success && bookings.length === 0 ? (
         <p className="text-center text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 p-6 rounded-md shadow">
-          まだ予約履歴はありませんにゃ。
+          まだ予約履歴はありません。
         </p>
       ) : (
         <p className="text-center text-red-500 bg-red-100 dark:bg-red-900 dark:text-red-200 p-4 rounded-md shadow">
