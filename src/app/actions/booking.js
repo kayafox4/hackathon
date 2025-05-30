@@ -27,6 +27,10 @@ export async function createBooking(formData) {
     return { success: false, message: '予約タイプは「人」または「荷物」を選択してください。' };
   }
   try {
+
+    const bookingDateObj = new Date(bookingDate);
+    const formattedBookingDateForMessage = `<span class="math-inline">\{bookingDateObj\.getFullYear\(\)\}年</span>{String(bookingDateObj.getMonth() + 1).padStart(2, '0')}月${String(bookingDateObj.getDate()).padStart(2, '0')}日`;
+
     const newBooking = await prisma.booking.create({
       data: {
         bookingNumber,
