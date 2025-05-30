@@ -17,35 +17,35 @@ enum BookingType {
 }
 
 model Booking {
-  id                String      @id @default(uuid()) // 予約の一意なID
-  bookingNumber     String      @unique // 予約をまとめるためのユニークな番号
-  email             String      // 予約者メールアドレス
-  departureBusStop  String      // 出発バス停
-  arrivalBusStop    String      // 到着バス停
-  bookingDate       DateTime    // 予約日 (日付のみ)
-  bookingTime       String      // 予約時間 (例: "10:00", "14:30" など)
-  type              BookingType // 人か荷物か
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  id               String      @id @default(uuid()) // 予約の一意なID
+  bookingNumber    String      @unique // 予約をまとめるためのユニークな番号
+  email            String // 予約者メールアドレス
+  departureBusStop String // 出発バス停
+  arrivalBusStop   String // 到着バス停
+  bookingDate      DateTime // 予約日 (日付のみ)
+  bookingTime      String // 予約時間 (例: "10:00", "14:30" など)
+  type             BookingType // 人か荷物か
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
-  notifications     Notification[]
+  notifications Notification[]
 }
 
 model Notification {
   id        String   @id @default(uuid())
-  userEmail String   // 通知を受け取るユーザーのメールアドレス
-  message   String   // 通知のメッセージ内容
-  link      String?  // 通知をクリックしたときの遷移先URL (例: /history/bookingId)
+  userEmail String // 通知を受け取るユーザーのメールアドレス
+  message   String // 通知のメッセージ内容
+  link      String? // 通知をクリックしたときの遷移先URL (例: /history/bookingId)
   isRead    Boolean  @default(false) // 未読・既読の状態
   createdAt DateTime @default(now()) // 作成日時
   updatedAt DateTime @updatedAt
 
   // どの予約に関連する通知か (任意)
-  bookingId String?  // 予約ID
+  bookingId String? // 予約ID
   booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade) // 予約が削除されたら通知も削除 (必要に応じて変更)
 
   @@index([userEmail, createdAt]) // ユーザーごと・作成日時順での検索を高速化
-  @@index([userEmail, isRead])    // ユーザーごと・未読/既読での検索を高速化
+  @@index([userEmail, isRead]) // ユーザーごと・未読/既読での検索を高速化
 }
 
 // 既存の Booking モデルに、関連する通知のリストを持たせる場合 (任意)
