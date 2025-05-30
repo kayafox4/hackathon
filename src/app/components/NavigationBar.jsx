@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   HomeIcon,
+  MapPinIcon,
   TicketIcon,
   CalendarDaysIcon,
   UserCircleIcon,
@@ -15,6 +16,7 @@ export default function NavigationBar() {
 
   const navItems = [
     { href: '/', label: 'ホーム', Icon: HomeIcon },
+    { href: '/map', label: 'マップ', Icon: MapPinIcon },
     { href: '/bookings', label: '予約', Icon: TicketIcon },
     { href: '/history', label: '履歴', Icon: CalendarDaysIcon },
     { href: '/test', label: 'アカウント', Icon: UserCircleIcon },
