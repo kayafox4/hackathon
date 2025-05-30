@@ -158,7 +158,9 @@ export default function BookingsPage() {
                 locale={ja}
                 fromDate={today}
                 toDate={threeMonthsFromToday}
-                month={selectedDate || today}
+                defaultMonth={selectedDate || today} // 初期表示月を指定 (month の代わりに defaultMonth)
+              // month={selectedDate || today}      // ← この行を削除またはコメントアウト
+              // onMonthChange={(month) => {}}   // ← この行を削除またはコメントアウト
                 captionLayout="dropdown-buttons"
                 fromYear={today.getFullYear()}
                 toYear={threeMonthsFromToday.getFullYear()}
