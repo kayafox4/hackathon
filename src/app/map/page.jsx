@@ -9,7 +9,7 @@ export default function MapPage() {
         マップページ
       </h1>
       <p className="text-lg text-gray-700 dark:text-gray-300">
-        ここはマップを表示するためのページです！🗺️
+        ここはマップを表示するためのページです。
       </p>
       <p className="text-md text-gray-600 dark:text-gray-400 mt-4">
         （ここにインタラクティブなマップが表示される予定です）
