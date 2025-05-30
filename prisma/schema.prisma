@@ -27,6 +27,8 @@ model Booking {
   type              BookingType // 人か荷物か
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
+
+  notifications     Notification[]
 }
 
 model Notification {
