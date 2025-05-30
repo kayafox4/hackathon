@@ -189,7 +189,7 @@ export default function BookingsPage() {
           <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">乗車するもの</span>
           <div className="flex rounded-md shadow-sm">
             <button type="button" onClick={() => setPassengerType('person')} className={`flex-1 py-2 px-4 rounded-l-md text-sm font-medium transition-colors duration-200 ease-in-out ${passengerType === 'person' ? 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'}`}>人</button>
-            <button type="button" onClick={() => setPassengerType('item')} className={`flex-1 py-2 px-4 rounded-r-md text-sm font-medium transition-colors duration-200 ease-in-out ${passengerType === 'item' ? 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'}`}>物</button>
+            <button type="button" onClick={() => setPassengerType('item')} className={`flex-1 py-2 px-4 rounded-r-md text-sm font-medium transition-colors duration-200 ease-in-out ${passengerType === 'item' ? 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'}`}>荷物</button>
           </div>
         </div>
         <button type="submit" disabled={isLoading} className="w-full py-2.5 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md shadow-md transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">

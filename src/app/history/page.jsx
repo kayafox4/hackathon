@@ -68,8 +68,10 @@ export default async function HistoryPage() {
                   <span className="font-medium">到着バス停：</span>
                   {booking.arrivalBusStop}
                 </p>
-                {/* 必要であれば、予約タイプ（人/物）なども表示できます */}
-                {/* <p><span className="font-medium">タイプ：</span>{booking.type === 'PERSON' ? '人' : '荷物'}</p> */}
+                <p>
+                  <span className="font-medium">タイプ：</span>
+                  {booking.type === 'PERSON' ? '人' : booking.type === 'LUGGAGE' ? '荷物' : '不明'}
+                </p>
               </div>
               <CancelBookingButton bookingId={booking.id} />
             </div>
