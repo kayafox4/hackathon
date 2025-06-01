@@ -14,7 +14,7 @@ export default function MapPage() {
       </div>
 
       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-center mt-2">
-        （地図が表示されない場合は、APIキーの設定やブラウザの位置情報の許可を確認してくださいにゃん。）
+        （地図が表示されない場合は、APIキーの設定やブラウザの位置情報の許可を確認してください。）
       </p>
     </div>
   );
