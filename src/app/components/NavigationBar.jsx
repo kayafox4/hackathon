@@ -19,7 +19,7 @@ export default function NavigationBar() {
     { href: '/map', label: 'マップ', Icon: MapPinIcon },
     { href: '/bookings', label: '予約', Icon: TicketIcon },
     { href: '/history', label: '履歴', Icon: CalendarDaysIcon },
-    { href: '/test', label: 'アカウント', Icon: UserCircleIcon },
+    { href: '/test', label: 'マイページ', Icon: UserCircleIcon },
   ];
 
   return (
