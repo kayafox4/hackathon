@@ -13,7 +13,7 @@ import {
   getUnreadNotificationCount,
   getNotifications,
   markAllUserNotificationsAsRead
-} from '@/app/actions/notification'; // パスを確認
+} from '@/app/actions/notification';
 
 export default function MyPage() { // コンポーネント名を MyPage に変更 (任意)
   const { data: session, status } = useSession();
