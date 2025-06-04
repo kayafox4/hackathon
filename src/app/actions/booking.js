@@ -1,14 +1,17 @@
-// src/app/actions/booking.js
+// src/app/actions/booking.js (完全版)
 "use server";
 
 import { PrismaClient } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'; // NextAuthの設定をインポート
 
 const prisma = new PrismaClient();
 
+// 予約を作成するServer Action
 export async function createBooking(formData) {
   const bookingNumber = formData.get('bookingNumber');
-  const email = formData.get('email');
+  const email = formData.get('email'); // 予約者のメール (通知の対象者)
   const departureBusStop = formData.get('departureBusStop');
   const arrivalBusStop = formData.get('arrivalBusStop');
   const bookingDate = formData.get('bookingDate'); // "YYYY-MM-DD" 形式の文字列
@@ -24,16 +27,13 @@ export async function createBooking(formData) {
   }
 
   try {
-    const bookingDateObj = new Date(bookingDate); // YYYY-MM-DD 文字列をDateオブジェクトに
+    const bookingDateObj = new Date(bookingDate);
 
-    // --- ↓↓↓ 通知メッセージ用の情報を準備 ↓↓↓ ---
     const year = bookingDateObj.getFullYear();
-    const month = String(bookingDateObj.getMonth() + 1).padStart(2, '0'); // 月は0から始まるので+1
+    const month = String(bookingDateObj.getMonth() + 1).padStart(2, '0');
     const day = String(bookingDateObj.getDate()).padStart(2, '0');
     const formattedDateForMessage = `${year}年${month}月${day}日`;
-
     const typeForMessage = typeFromForm === 'PERSON' ? '人' : '荷物';
-    // --- ↑↑↑ 通知メッセージ用の情報を準備 ここまで ↑↑↑ ---
 
     const newBooking = await prisma.booking.create({
       data: {
@@ -41,7 +41,7 @@ export async function createBooking(formData) {
         email,
         departureBusStop,
         arrivalBusStop,
-        bookingDate: bookingDateObj, // DBにはDateオブジェクトで保存
+        bookingDate: bookingDateObj,
         bookingTime,
         type: typeFromForm,
       },
@@ -49,17 +49,13 @@ export async function createBooking(formData) {
 
     if (newBooking) {
       try {
-        // --- ↓↓↓ 通知メッセージの作成方法を変更 ↓↓↓ ---
         const notificationMessage = `${formattedDateForMessage} ${bookingTime}に 発：${departureBusStop}、着：${arrivalBusStop}、タイプ：${typeForMessage}の予約が入りました`;
-        // --- ↑↑↑ 通知メッセージの作成方法を変更 ↑↑↑ ---
-
         const newNotification = await prisma.notification.create({
           data: {
             userEmail: newBooking.email,
-            message: notificationMessage, // ★作成したメッセージを使用
-            link: `/history#booking-${newBooking.id}`, // 例: 履歴ページ内の該当予約へのリンク
+            message: notificationMessage,
+            link: `/history#booking-${newBooking.id}`,
             bookingId: newBooking.id,
-            // isRead: false はデフォルトで設定される
           },
         });
         console.log('[アクション:createBooking] 通知が作成されました:', newNotification);
@@ -80,4 +76,89 @@ export async function createBooking(formData) {
   }
 }
 
-// ... (getBookings, getUserBookings, cancelBookingAction 関数はそのまま) ...
+// 全ての予約を取得するServer Action (管理者用などに使えます)
+export async function getBookings() {
+  try {
+    const bookings = await prisma.booking.findMany({
+      orderBy: [
+        { bookingDate: 'asc' },
+        { bookingTime: 'asc' },
+      ],
+    });
+    return { success: true, bookings };
+  } catch (error) {
+    console.error("全予約取得エラー:", error);
+    return { success: false, message: '予約の取得に失敗しました。', bookings: [] };
+  }
+}
+
+// 特定のユーザーの予約を取得するServer Action (履歴ページ用)
+export async function getUserBookings(userEmail) {
+  if (!userEmail) {
+    // この関数を呼び出す側(HistoryPage)で既にsession.user.emailの存在確認をしているので、
+    // ここで null/undefined になるケースは少ないはずですが、念のため。
+    console.error("[アクション:getUserBookings] userEmailが提供されませんでした。");
+    return { success: false, message: 'ユーザー情報が取得できませんでした。', bookings: [] };
+  }
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: {
+        email: userEmail,
+      },
+      orderBy: [
+        { bookingDate: 'desc' },
+        { bookingTime: 'desc' },
+      ],
+    });
+    return { success: true, bookings: bookings };
+  } catch (error) {
+    console.error("ユーザーの予約取得エラー:", error);
+    return { success: false, message: '予約履歴の取得に失敗しました。', bookings: [] };
+  }
+}
+
+// 予約をキャンセルするServer Action
+export async function cancelBookingAction(bookingId) {
+  'use server';
+
+  if (!bookingId) {
+    return { success: false, message: '予約IDが指定されていません。' };
+  }
+
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user?.email) {
+    return { success: false, message: '認証されていません。ログインしてください。' };
+  }
+
+  try {
+    const bookingToCancel = await prisma.booking.findUnique({
+      where: { id: bookingId },
+    });
+
+    if (!bookingToCancel) {
+      return { success: false, message: 'キャンセル対象の予約が見つかりませんでした。' };
+    }
+
+    if (bookingToCancel.email !== session.user.email) {
+      return { success: false, message: 'この予約をキャンセルする権限がありません。' };
+    }
+
+    await prisma.booking.delete({
+      where: {
+        id: bookingId,
+        email: session.user.email, 
+      },
+    });
+
+    revalidatePath('/history');
+    return { success: true, message: '予約をキャンセルしました。' };
+
+  } catch (error) {
+    console.error("予約キャンセルエラー:", error);
+    // @ts-ignore
+    if (error.code === 'P2025') {
+        return { success: false, message: 'キャンセル対象の予約が見つからないか、既に削除されています。'}
+    }
+    return { success: false, message: '予約のキャンセル中にエラーが発生しました。' };
+  }
+}
