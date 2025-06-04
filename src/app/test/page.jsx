@@ -127,7 +127,7 @@ export default function MyPage() {
   const handlePaymentMethodSelect = (methodName) => {
     setSelectedPaymentMethod(methodName);
     setIsPaymentModalOpen(false); // 選択したら支払いモーダルを閉じる
-    alert(`${methodName} が選択されましたにゃん！（実際の処理はまだです）`);
+    alert(`${methodName} が選択されました（実際の処理はまだです）`);
   };
 
   useEffect(() => {
@@ -168,7 +168,7 @@ export default function MyPage() {
     const InfoCard = ({ icon: Icon, label, badgeCount, onClick, cardRef }) => (
       <button 
         ref={cardRef}
-        onClick={onClick || (() => alert(`${label}がクリックされましたにゃん（機能準備中）`))}
+        onClick={onClick || (() => alert(`${label}がクリックされました（機能準備中）`))}
         className="flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow aspect-square w-full text-center"
         aria-expanded={
             label === "プロフィール" ? isProfileModalOpen : 
