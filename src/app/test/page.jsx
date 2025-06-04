@@ -93,7 +93,7 @@ export default function MyPage() {
   if (session && session.user) {
     const InfoCard = ({ icon: Icon, label, badgeCount, onClick }) => (
       <button 
-        onClick={onClick || (() => alert(`${label}がクリックされましたにゃん（機能準備中）`))}
+        onClick={onClick || (() => alert(`${label}がクリックされました（機能準備中）`))}
         className="flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow aspect-square w-full text-center"
         aria-expanded={label === "プロフィール" ? showMemberInfo : (label === "通知" ? isPanelOpen : undefined )} // プロフィールカードと通知カードにaria-expanded追加
       >
@@ -185,5 +185,5 @@ export default function MyPage() {
     );
   }
 
-  return ( <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 p-4 text-center"><h1 className="text-3xl font-bold mb-6 text-red-600 dark:text-red-400">アクセスできません</h1><p className="text-lg text-gray-700 dark:text-gray-300 mb-4">このページを表示するにはログインが必要ですにゃ。</p></div> );
+  return ( <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 p-4 text-center"><h1 className="text-3xl font-bold mb-6 text-red-600 dark:text-red-400">アクセスできません</h1><p className="text-lg text-gray-700 dark:text-gray-300 mb-4">このページを表示するにはログインが必要です。</p></div> );
 }
