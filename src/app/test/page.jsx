@@ -86,7 +86,7 @@ export default function MyPage() { // コンポーネント名を MyPage に変�
     // カード型コンポーネント (内部利用)
     const InfoCard = ({ icon: Icon, label, badgeCount, onClick }) => (
       <button 
-        onClick={onClick || (() => alert(`${label}がクリックされましたにゃん（機能準備中）`))}
+        onClick={onClick || (() => alert(`${label}がクリックされました（機能準備中）`))}
         className="flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow aspect-square w-full text-center"
       >
         <div className="relative">

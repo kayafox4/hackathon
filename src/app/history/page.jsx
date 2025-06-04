@@ -25,7 +25,7 @@ export default async function HistoryPage() {
         <main className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">予約履歴</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            予約履歴をご覧になるには、ログインが必要ですにゃん。
+            予約履歴をご覧になるには、ログインが必要です。
           </p>
           <Link
             href="/api/auth/signin" // NextAuthのデフォルトサインインページへ
