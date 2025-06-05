@@ -98,7 +98,67 @@ export default function MyPage() {
             <BellIconSolid className="h-7 w-7" />
             {unreadCount > 0 && ( <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white ring-2 ring-white dark:ring-gray-800">{unreadCount > 9 ? '9+' : unreadCount}</span> )}
           </button>
-          {isNotificationPanelOpen && ( <div ref={notificationPanelRef} className={`absolute top-full right-0 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto mt-2 w-80 sm:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-30 overflow-hidden transition-all duration-200 ease-out origin-top-right sm:origin-top-center ${isNotificationPanelClosing ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}><div className="flex justify-between items-center p-3 px-4 border-b border-gray-200 dark:border-gray-700"><h3 className="font-semibold text-md text-gray-800 dark:text-gray-100">通知</h3><button onClick={handleBellClick} className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-400" aria-label="通知パネルを閉じる"><XMarkIcon className="h-5 w-5"/></button></div>{isLoadingNotifications ? ( <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">読み込み中...</div> ) : (notifications && notifications.length > 0) ? ( <ul className="max-h-80 overflow-y-auto">{notifications.map(notif => { let timeAgo = '日時不明'; try { if (notif && notif.createdAt) { timeAgo = formatDistanceToNow(parseISO(notif.createdAt), { addSuffix: true, locale: ja }); } } catch (e) { console.error('日時のフォーマットエラー:', e, '元のcreatedAt:', notif?.createdAt); } return ( <li key={notif.id} className={`border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${!notif.isRead ? 'bg-green-50 dark:bg-green-900/20' : 'bg-transparent'}`}>{notif.link ? ( <Link href={notif.link} className="block p-3 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors" onClick={() => closeModalWithAnimation(setIsNotificationPanelOpen, setIsNotificationPanelClosing)}><p className={`text-sm ${!notif.isRead ? 'font-semibold text-gray-800 dark:text-gray-100' : 'text-gray-600 dark:text-gray-300'}`}>{notif.message || 'メッセージなし'}</p><p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{timeAgo}</p></Link> ) : ( <div className="p-3 px-4 text-sm"><p className={`${!notif.isRead ? 'font-semibold text-gray-800 dark:text-gray-100' : 'text-gray-600 dark:text-gray-300'}`}>{notif.message || 'メッセージなし'}</p><p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{timeAgo}</p></div> )}</li> ); })}</ul> ) : ( <p className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">新しい通知はありません。</p> )} <div className="p-2 px-4 border-t border-gray-200 dark:border-gray-700 text-center"><Link href="/history" onClick={() => closeModalWithAnimation(setIsNotificationPanelOpen, setIsNotificationPanelClosing)} className="text-sm text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 font-medium">すべての履歴を見る</Link></div></div> )}
+          {isNotificationPanelOpen && ( <div
+    ref={notificationPanelRef}
+    className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-30 overflow-hidden transition-all duration-200 ease-out origin-top-center
+      ${isNotificationPanelClosing ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}
+    `}
+    style={{ right: 'auto' }} // ← 右寄せを解除
+  >
+    <div className="flex justify-between items-center p-3 px-4 border-b border-gray-200 dark:border-gray-700">
+      <h3 className="font-semibold text-md text-gray-800 dark:text-gray-100">通知</h3>
+      <button onClick={handleBellClick} className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-400" aria-label="通知パネルを閉じる">
+        <XMarkIcon className="h-5 w-5"/>
+      </button>
+    </div>
+    {isLoadingNotifications ? (
+      <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">読み込み中...</div>
+    ) : (notifications && notifications.length > 0) ? (
+      <ul className="max-h-80 overflow-y-auto">
+        {notifications.map(notif => {
+          let timeAgo = '日時不明';
+          try {
+            if (notif && notif.createdAt) {
+              timeAgo = formatDistanceToNow(parseISO(notif.createdAt), { addSuffix: true, locale: ja });
+            }
+          } catch (e) {
+            console.error('日時のフォーマットエラー:', e, '元のcreatedAt:', notif?.createdAt);
+          }
+          return (
+            <li key={notif.id} className={`border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${!notif.isRead ? 'bg-green-50 dark:bg-green-900/20' : 'bg-transparent'}`}>
+              {notif.link ? (
+                <Link
+                  href={notif.link}
+                  className="block p-3 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                  onClick={() => closeModalWithAnimation(setIsNotificationPanelOpen, setIsNotificationPanelClosing)}
+                >
+                  <p className={`text-sm ${!notif.isRead ? 'font-semibold text-gray-800 dark:text-gray-100' : 'text-gray-600 dark:text-gray-300'}`}>{notif.message || 'メッセージなし'}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{timeAgo}</p>
+                </Link>
+              ) : (
+                <div className="p-3 px-4 text-sm">
+                  <p className={`${!notif.isRead ? 'font-semibold text-gray-800 dark:text-gray-100' : 'text-gray-600 dark:text-gray-300'}`}>{notif.message || 'メッセージなし'}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{timeAgo}</p>
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    ) : (
+      <p className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">新しい通知はありません。</p>
+    )}
+    <div className="p-2 px-4 border-t border-gray-200 dark:border-gray-700 text-center">
+      <Link
+        href="/history"
+        onClick={() => closeModalWithAnimation(setIsNotificationPanelOpen, setIsNotificationPanelClosing)}
+        className="text-sm text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 font-medium"
+      >
+        すべての履歴を見る
+      </Link>
+    </div>
+  </div>
+)}
         </div>
 
         {/* 基本情報セクション */}
