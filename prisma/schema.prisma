@@ -25,6 +25,7 @@ model Booking {
   bookingDate      DateTime // 予約日 (日付のみ)
   bookingTime      String // 予約時間 (例: "10:00", "14:30" など)
   type             BookingType // 人か荷物か
+  luggageOptions   Json?        // ★追加：荷物オプション（複数選択可）
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
