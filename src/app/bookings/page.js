@@ -25,6 +25,14 @@ export default function BookingsPage() {
   const [selectedHour, setSelectedHour] = useState('');
   const [selectedMinute, setSelectedMinute] = useState('');
   const [passengerType, setPassengerType] = useState('person');
+  const [luggageOptions, setLuggageOptions] = useState([]); // 荷物オプション
+  const luggageLabels = [
+    { value: 'fragile', label: 'こわれもの' },
+    { value: 'perishable', label: 'なまもの' },
+    { value: 'breakable', label: 'われもの' },
+    { value: 'upside_down_ng', label: '逆さま厳禁' },
+    { value: 'other', label: 'その他' },
+  ];
 
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +64,14 @@ export default function BookingsPage() {
     setShowCalendar(false);
   };
 
+  const handleLuggageOptionChange = (value) => {
+    setLuggageOptions((prev) =>
+      prev.includes(value)
+        ? prev.filter((v) => v !== value)
+        : [...prev, value]
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormMessage({ type: '', text: '' });
@@ -66,6 +82,10 @@ export default function BookingsPage() {
 
     if (!departureBusStop || !arrivalBusStop || !formattedDate || !selectedHour || !selectedMinute) {
       setFormMessage({ type: 'error', text: 'すべての必須項目を入力してください。' });
+      return;
+    }
+    if (passengerType === 'item' && luggageOptions.length === 0) {
+      setFormMessage({ type: 'error', text: '荷物の種類を1つ以上選択してください。' });
       return;
     }
     if (!session?.user?.email) {
@@ -81,6 +101,9 @@ export default function BookingsPage() {
     formData.append('bookingDate', formattedDate);
     formData.append('bookingTime', `${selectedHour}:${selectedMinute}`);
     formData.append('type', passengerType === 'person' ? 'PERSON' : 'LUGGAGE');
+    if (passengerType === 'item') {
+      formData.append('luggageOptions', JSON.stringify(luggageOptions));
+    }
     try {
       const result = await createBooking(formData);
       if (result.success && result.booking) {
@@ -187,10 +210,29 @@ export default function BookingsPage() {
         
         <div className="mb-6">
           <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">乗車するもの</span>
-          <div className="flex rounded-md shadow-sm">
+          <div className="flex rounded-md shadow-sm mb-2">
             <button type="button" onClick={() => setPassengerType('person')} className={`flex-1 py-2 px-4 rounded-l-md text-sm font-medium transition-colors duration-200 ease-in-out ${passengerType === 'person' ? 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'}`}>人</button>
             <button type="button" onClick={() => setPassengerType('item')} className={`flex-1 py-2 px-4 rounded-r-md text-sm font-medium transition-colors duration-200 ease-in-out ${passengerType === 'item' ? 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'}`}>荷物</button>
           </div>
+          {passengerType === 'item' && (
+            <div className="mb-2">
+              <span className="block text-xs text-gray-500 dark:text-gray-400 mb-1">荷物の種類を選択（複数可）</span>
+              <div className="flex flex-wrap gap-2">
+                {luggageLabels.map(opt => (
+                  <label key={opt.value} className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
+                    <input
+                      type="checkbox"
+                      value={opt.value}
+                      checked={luggageOptions.includes(opt.value)}
+                      onChange={() => handleLuggageOptionChange(opt.value)}
+                      className="accent-green-600"
+                    />
+                    <span className="text-xs">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         <button type="submit" disabled={isLoading} className="w-full py-2.5 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md shadow-md transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
           {isLoading ? '予約処理中...' : 'バスを予約する'}
