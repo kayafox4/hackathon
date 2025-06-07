@@ -16,6 +16,15 @@ function formatBookingDateTime(dateString, timeString) {
   return `${year}年${month}月${day}日 ${timeString}`;
 }
 
+// 荷物ラベルの対応表
+const luggageLabels = [
+  { value: 'fragile', label: 'こわれもの' },
+  { value: 'perishable', label: 'なまもの' },
+  { value: 'breakable', label: 'われもの' },
+  { value: 'upside_down_ng', label: '逆さま厳禁' },
+  { value: 'other', label: 'その他' },
+];
+
 export default async function HistoryPage() {
   const session = await getServerSession(authOptions);
 
@@ -72,6 +81,15 @@ export default async function HistoryPage() {
                   <span className="font-medium">タイプ：</span>
                   {booking.type === 'PERSON' ? '人' : booking.type === 'LUGGAGE' ? '荷物' : '不明'}
                 </p>
+                {/* 荷物の種類を表示 */}
+                {booking.type === 'LUGGAGE' && Array.isArray(booking.luggageOptions) && booking.luggageOptions.length > 0 && (
+                  <p>
+                    <span className="font-medium">荷物の種類：</span>
+                    {booking.luggageOptions
+                      .map(opt => luggageLabels.find(l => l.value === opt)?.label || opt)
+                      .join('、')}
+                  </p>
+                )}
               </div>
               <CancelBookingButton bookingId={booking.id} />
             </div>
