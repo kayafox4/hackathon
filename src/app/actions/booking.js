@@ -17,6 +17,8 @@ export async function createBooking(formData) {
   const bookingDate = formData.get('bookingDate'); // "YYYY-MM-DD" 形式の文字列
   const bookingTime = formData.get('bookingTime'); // "HH:MM" 形式の文字列
   const typeFromForm = formData.get('type'); // 'PERSON' または 'LUGGAGE'
+  const luggageOptionsRaw = formData.get('luggageOptions');
+  const luggageOptions = luggageOptionsRaw ? JSON.parse(luggageOptionsRaw) : null;
 
   if (!bookingNumber || !email || !departureBusStop || !arrivalBusStop || !bookingDate || !bookingTime || !typeFromForm) {
     return { success: false, message: '全ての項目を入力してください。' };
@@ -44,6 +46,7 @@ export async function createBooking(formData) {
         bookingDate: bookingDateObj,
         bookingTime,
         type: typeFromForm,
+        luggageOptions: typeFromForm === 'LUGGAGE' ? luggageOptions : null,
       },
     });
 
