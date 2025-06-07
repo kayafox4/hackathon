@@ -3,8 +3,23 @@
 import { useSession } from 'next-auth/react';
 import Login from './components/Login';
 import NavigationBar from './components/NavigationBar';
+import AuthStatus from './components/AuthStatus';
 import { useEffect, useState } from 'react';
 import busStops from '@/lib/busStops';
+import { getBookings } from './actions/booking';
+
+// 日付と時間を日本語でフォーマット
+function formatBookingDateTime(dateString, timeString) {
+  const date = new Date(dateString + 'T' + (timeString || '00:00'));
+  return `${date.getMonth() + 1}月${date.getDate()}日 ${timeString}`;
+}
+
+// 予約タイプアイコン
+function BookingTypeIcon({ type }) {
+  if (type === 'PERSON') return <span title="人" className="mr-1">🧑</span>;
+  if (type === 'LUGGAGE') return <span title="荷物" className="mr-1">🧳</span>;
+  return null;
+}
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -50,26 +65,37 @@ export default function Home() {
         {status === 'loading' && <div>セッションを読み込み中...</div>}
         {status === 'authenticated' ? (
           <div className="w-full max-w-2xl mx-auto">
+            <AuthStatus />
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
               <h2 className="text-xl font-bold mb-4 text-green-700 dark:text-green-400">
-                バス停ごとの直近の出発予定
+                今後の予約一覧
               </h2>
               {loading ? (
                 <div>読み込み中...</div>
               ) : (
-                <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-                  {upcomingDepartures.map(({ stop, nextBooking }) => (
-                    <div key={stop} className="flex items-center justify-between border-b pb-2">
-                      <span className="font-semibold">{stop}</span>
-                      {nextBooking ? (
-                        <span>
-                          {nextBooking.bookingDate?.slice(0, 10)} {nextBooking.bookingTime} 発
-                        </span>
-                      ) : (
-                        <span className="text-gray-400 text-sm">直近の予約なし</span>
-                      )}
+                <div className="grid gap-4">
+                  {allBookings.length > 0 ? (
+                    allBookings.map(booking => (
+                      <div
+                        key={booking.id}
+                        className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow flex flex-col"
+                      >
+                        <div className="flex items-center mb-2">
+                          <BookingTypeIcon type={booking.type} />
+                          <span className="text-lg font-semibold">
+                            {formatBookingDateTime(booking.bookingDate, booking.bookingTime)}
+                          </span>
+                        </div>
+                        <div className="text-gray-700 dark:text-gray-300">
+                          出発: {booking.departureBusStop} → 到着: {booking.arrivalBusStop}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-gray-500 text-center py-8">
+                      現在、今後の予約はありません
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>

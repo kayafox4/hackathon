@@ -79,14 +79,27 @@ export async function createBooking(formData) {
   }
 }
 
-// 全ての予約を取得するServer Action (管理者用などに使えます)
+// 今後の予約のみ取得し、日時順で最大10件返す
 export async function getBookings() {
+  const prisma = new PrismaClient();
   try {
+    const now = new Date();
+    // bookingDate, bookingTimeで昇順、今日以降のみ、最大10件
     const bookings = await prisma.booking.findMany({
+      where: {
+        OR: [
+          { bookingDate: { gt: now } },
+          {
+            bookingDate: { equals: now.toISOString().slice(0, 10) },
+            bookingTime: { gte: now.toTimeString().slice(0, 5) }
+          }
+        ]
+      },
       orderBy: [
         { bookingDate: 'asc' },
-        { bookingTime: 'asc' },
+        { bookingTime: 'asc' }
       ],
+      take: 10,
     });
     return { success: true, bookings };
   } catch (error) {
