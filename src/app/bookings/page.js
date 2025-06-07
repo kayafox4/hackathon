@@ -211,9 +211,28 @@ export default function BookingsPage() {
         <div className="mb-6">
           <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">乗車するもの</span>
           <div className="flex rounded-md shadow-sm mb-2">
-            <button type="button" onClick={() => setPassengerType('person')} className={`flex-1 py-2 px-4 rounded-l-md text-sm font-medium transition-colors duration-200 ease-in-out ${passengerType === 'person' ? 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'}`}>人</button>
-            <button type="button" onClick={() => setPassengerType('item')} className={`flex-1 py-2 px-4 rounded-r-md text-sm font-medium transition-colors duration-200 ease-in-out ${passengerType === 'item' ? 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'}`}>荷物</button>
+            <button
+              type="button"
+              onClick={() => setPassengerType('person')}
+              className={`flex-1 py-2 px-4 rounded-l-md text-sm font-medium transition-colors duration-200 ease-in-out ${passengerType === 'person' ? 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'}`}
+            >
+              人
+            </button>
+            <button
+              type="button"
+              onClick={() => setPassengerType('item')}
+              className={`flex-1 py-2 px-4 rounded-r-md text-sm font-medium transition-colors duration-200 ease-in-out ${passengerType === 'item' ? 'bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500'}`}
+            >
+              荷物
+            </button>
           </div>
+          {/* ここに金額表示を追加 */}
+          {passengerType === 'person' && (
+            <div className="mb-2 text-green-700 dark:text-green-300 font-bold">500円</div>
+          )}
+          {passengerType === 'item' && (
+            <div className="mb-2 text-green-700 dark:text-green-300 font-bold">300円</div>
+          )}
           {passengerType === 'item' && (
             <div className="mb-2">
               <span className="block text-xs text-gray-500 dark:text-gray-400 mb-1">荷物の種類を選択（複数可）</span>
