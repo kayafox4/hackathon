@@ -43,14 +43,14 @@ export async function createBooking(formData) {
         bookingTime,
       },
     });
-
-    if (existing) {
-      // 便のカウントをインクリメント
-      await prisma.booking.update({
-        where: { id: existing.id },
-        data: { count: { increment: 1 } },
-      });
-    }
+   console.log("increment");
+    // if (existing) {
+    //   // 便のカウントをインクリメント
+    //   await prisma.booking.update({
+    //     where: { id: existing.id },
+    //     data: { count: { increment: 1 } },
+    //   });
+    // }
 
     // 自分の予約レコードを新規作成（必ず作る）
     const newBooking = await prisma.booking.create({
