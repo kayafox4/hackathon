@@ -83,24 +83,15 @@ export async function createBooking(formData) {
 export async function getBookings() {
   const prisma = new PrismaClient();
   try {
-    const now = new Date();
-    // bookingDate, bookingTimeで昇順、今日以降のみ、最大10件
+    // すべての予約を取得し、日付・時間で昇順、最大10件
     const bookings = await prisma.booking.findMany({
-      where: {
-        OR: [
-          { bookingDate: { gt: now } },
-          {
-            bookingDate: { equals: now.toISOString().slice(0, 10) },
-            bookingTime: { gte: now.toTimeString().slice(0, 5) }
-          }
-        ]
-      },
       orderBy: [
         { bookingDate: 'asc' },
         { bookingTime: 'asc' }
       ],
       take: 10,
     });
+    console.log("取得した予約:", bookings);
     return { success: true, bookings };
   } catch (error) {
     console.error("全予約取得エラー:", error);

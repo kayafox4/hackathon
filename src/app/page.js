@@ -10,8 +10,24 @@ import { getBookings } from './actions/booking';
 
 // 日付と時間を日本語でフォーマット
 function formatBookingDateTime(dateString, timeString) {
-  const date = new Date(dateString + 'T' + (timeString || '00:00'));
-  return `${date.getMonth() + 1}月${date.getDate()}日 ${timeString}`;
+  // dateStringがDate型の場合も考慮
+  let date;
+  if (typeof dateString === 'string') {
+    if (dateString.includes('T')) {
+      date = new Date(dateString);
+    } else {
+      date = new Date(dateString + 'T00:00:00');
+    }
+  } else if (dateString instanceof Date) {
+    date = dateString;
+  } else {
+    return '';
+  }
+  // 日本時間に変換
+  const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const month = jstDate.getMonth() + 1;
+  const day = jstDate.getDate();
+  return `${month}月${day}日 ${timeString}`;
 }
 
 // 予約タイプアイコン
@@ -32,6 +48,7 @@ export default function Home() {
       setLoading(true);
       getBookings()
         .then(result => {
+          console.log('取得した予約:', result);
           setAllBookings(result.bookings || []);
           setLoading(false);
         })
