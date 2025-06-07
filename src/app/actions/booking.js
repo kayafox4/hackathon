@@ -11,12 +11,12 @@ const prisma = new PrismaClient();
 // 予約を作成するServer Action
 export async function createBooking(formData) {
   const bookingNumber = formData.get('bookingNumber');
-  const email = formData.get('email'); // 予約者のメール (通知の対象者)
+  const email = formData.get('email');
   const departureBusStop = formData.get('departureBusStop');
   const arrivalBusStop = formData.get('arrivalBusStop');
-  const bookingDate = formData.get('bookingDate'); // "YYYY-MM-DD" 形式の文字列
-  const bookingTime = formData.get('bookingTime'); // "HH:MM" 形式の文字列
-  const typeFromForm = formData.get('type'); // 'PERSON' または 'LUGGAGE'
+  const bookingDate = formData.get('bookingDate');
+  const bookingTime = formData.get('bookingTime');
+  const typeFromForm = formData.get('type');
   const luggageOptionsRaw = formData.get('luggageOptions');
   const luggageOptions = luggageOptionsRaw ? JSON.parse(luggageOptionsRaw) : null;
 
@@ -29,47 +29,42 @@ export async function createBooking(formData) {
   }
 
   try {
-    const bookingDateObj = new Date(bookingDate);
+    // 既存便の検索（便のカウント用）
+    const existing = await prisma.booking.findFirst({
+      where: {
+        departureBusStop,
+        arrivalBusStop,
+        bookingDate: new Date(bookingDate),
+        bookingTime,
+      },
+    });
 
-    const year = bookingDateObj.getFullYear();
-    const month = String(bookingDateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(bookingDateObj.getDate()).padStart(2, '0');
-    const formattedDateForMessage = `${year}年${month}月${day}日`;
-    const typeForMessage = typeFromForm === 'PERSON' ? '人' : '荷物';
+    if (existing) {
+      // 便のカウントをインクリメント
+      await prisma.booking.update({
+        where: { id: existing.id },
+        data: { count: { increment: 1 } },
+      });
+    }
 
+    // 自分の予約レコードを新規作成（必ず作る）
     const newBooking = await prisma.booking.create({
       data: {
         bookingNumber,
         email,
         departureBusStop,
         arrivalBusStop,
-        bookingDate: bookingDateObj,
+        bookingDate: new Date(bookingDate),
         bookingTime,
         type: typeFromForm,
         luggageOptions: typeFromForm === 'LUGGAGE' ? luggageOptions : null,
+        count: 1,
       },
     });
 
-    if (newBooking) {
-      try {
-        const notificationMessage = `${formattedDateForMessage} ${bookingTime}に 発：${departureBusStop}、着：${arrivalBusStop}、タイプ：${typeForMessage}の予約が入りました`;
-        const newNotification = await prisma.notification.create({
-          data: {
-            userEmail: newBooking.email,
-            message: notificationMessage,
-            link: `/history#booking-${newBooking.id}`,
-            bookingId: newBooking.id,
-          },
-        });
-        console.log('[アクション:createBooking] 通知が作成されました:', newNotification);
-      } catch (notificationError) {
-        console.error("[アクション:createBooking] 通知の作成に失敗しました:", notificationError);
-      }
-    }
-
-    revalidatePath('/bookings'); 
     revalidatePath('/history');
-    return { success: true, booking: newBooking };
+    revalidatePath('/');
+    return { success: true, booking: newBooking, message: '予約が完了しました。' };
   } catch (error) {
     console.error("予約作成エラー:", error);
     if (error.code === 'P2002') {
@@ -83,16 +78,30 @@ export async function createBooking(formData) {
 export async function getBookings() {
   const prisma = new PrismaClient();
   try {
-    // すべての予約を取得し、日付・時間で昇順、最大10件
-    const bookings = await prisma.booking.findMany({
+    // すべての予約を便ごとにグループ化して取得
+    const bookings = await prisma.booking.groupBy({
+      by: ['departureBusStop', 'arrivalBusStop', 'bookingDate', 'bookingTime'],
+      _sum: { count: true },
+      _min: { id: true, type: true }, // 代表値として最初のid/typeを使う
       orderBy: [
         { bookingDate: 'asc' },
         { bookingTime: 'asc' }
       ],
       take: 10,
     });
-    console.log("取得した予約:", bookings);
-    return { success: true, bookings };
+
+    // 表示用に整形
+    const result = bookings.map(b => ({
+      id: b._min.id,
+      departureBusStop: b.departureBusStop,
+      arrivalBusStop: b.arrivalBusStop,
+      bookingDate: b.bookingDate,
+      bookingTime: b.bookingTime,
+      type: b._min.type,
+      count: b._sum.count,
+    }));
+
+    return { success: true, bookings: result };
   } catch (error) {
     console.error("全予約取得エラー:", error);
     return { success: false, message: '予約の取得に失敗しました。', bookings: [] };
