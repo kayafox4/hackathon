@@ -26,6 +26,7 @@ model Booking {
   bookingTime      String // 予約時間 (例: "10:00", "14:30" など)
   type             BookingType // 人か荷物か
   luggageOptions   Json?        // ★追加：荷物オプション（複数選択可）
+  count            Int          @default(1) // ★追加：同一予約のカウント
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
