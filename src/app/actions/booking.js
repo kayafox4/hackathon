@@ -8,9 +8,14 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route'; // NextAuthの
 
 const prisma = new PrismaClient();
 
+// 4桁のランダムな数字を生成
+function generateBookingNumber() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+}
+
 // 予約を作成するServer Action
 export async function createBooking(formData) {
-  const bookingNumber = formData.get('bookingNumber');
+  const bookingNumber = formData.get('bookingNumber') || generateBookingNumber();
   const email = formData.get('email');
   const departureBusStop = formData.get('departureBusStop');
   const arrivalBusStop = formData.get('arrivalBusStop');

@@ -11,8 +11,9 @@ import 'react-day-picker/dist/style.css'; // ★★★ これが非常に重要�
 import { format as formatDateFn, addMonths, isValid as isValidDate, startOfDay } from 'date-fns';
 import { ja } from 'date-fns/locale';
 
+// 4桁のランダムな数字を生成
 function generateBookingNumber() {
-  return `BK-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`;
+  return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
 export default function BookingsPage() {
@@ -37,6 +38,8 @@ export default function BookingsPage() {
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [formMessage, setFormMessage] = useState({ type: '', text: '' });
+  const [showBookingNumberModal, setShowBookingNumberModal] = useState(false);
+  const [lastBookingNumber, setLastBookingNumber] = useState('');
 
   const generateHourOptions = () => {
     const options = [];
@@ -107,7 +110,8 @@ export default function BookingsPage() {
     try {
       const result = await createBooking(formData);
       if (result.success && result.booking) {
-        setFormMessage({ type: 'success', text: `予約が完了しました！ (予約番号: ${result.booking.bookingNumber})`});
+        setLastBookingNumber(result.booking.bookingNumber);
+        setShowBookingNumberModal(true);
       } else {
         setFormMessage({ type: 'error', text: result.message || '予約の作成に失敗しました。' });
       }
@@ -257,6 +261,24 @@ export default function BookingsPage() {
           {isLoading ? '予約処理中...' : 'バスを予約する'}
         </button>
       </form>
+
+      {showBookingNumberModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-xs relative text-center">
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
+              onClick={() => setShowBookingNumberModal(false)}
+            >
+              ×
+            </button>
+            <div className="text-lg font-bold mb-2">予約が完了しました！</div>
+            <div className="text-2xl font-bold text-green-700 mb-4">
+              予約番号 {lastBookingNumber}
+            </div>
+            <div className="text-sm text-gray-600">この番号を控えておいてください。</div>
+          </div>
+        </div>
+      )}
       {/* NavigationBar は RootLayout で描画されるため、ここでは不要 */}
     </div>
   );

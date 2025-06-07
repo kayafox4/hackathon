@@ -38,6 +38,11 @@ function BookingTypeIcon({ type }) {
   return null;
 }
 
+// 4桁のランダムな数字を生成
+function generateBookingNumber() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+}
+
 export default function Home() {
   const { data: session, status } = useSession();
   const [allBookings, setAllBookings] = useState([]);
@@ -47,6 +52,8 @@ export default function Home() {
   const [rideType, setRideType] = useState('PERSON');
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingMessage, setBookingMessage] = useState('');
+  const [showBookingNumberModal, setShowBookingNumberModal] = useState(false);
+  const [lastBookingNumber, setLastBookingNumber] = useState('');
 
   // 予約データを取得
   useEffect(() => {
@@ -86,28 +93,30 @@ export default function Home() {
     setBookingLoading(true);
     setBookingMessage('');
     const formData = new FormData();
-    formData.append('bookingNumber', `RS-${Math.random().toString(36).slice(2, 10)}`);
+    formData.append('bookingNumber', generateBookingNumber()); // ←ここを修正
     formData.append('email', session.user.email);
     formData.append('departureBusStop', selectedBooking.departureBusStop);
     formData.append('arrivalBusStop', selectedBooking.arrivalBusStop);
     formData.append('bookingDate', selectedBooking.bookingDate);
     formData.append('bookingTime', selectedBooking.bookingTime);
     formData.append('type', rideType);
-    // 荷物の場合は空配列
     if (rideType === 'LUGGAGE') {
       formData.append('luggageOptions', JSON.stringify([]));
     }
     try {
-      const result = await createBooking(formData); // ここを修正
-      if (result.success) {
+      const result = await createBooking(formData);
+      if (result.success && result.booking) {
+        setLastBookingNumber(result.booking.bookingNumber);
+        setShowBookingNumberModal(true);
         setBookingMessage('予約が完了しました！');
       } else {
         setBookingMessage(result.message || '予約に失敗しました');
       }
     } catch (e) {
       setBookingMessage('エラーが発生しました');
+    } finally {
+      setBookingLoading(false);
     }
-    setBookingLoading(false);
   }
 
   return (
@@ -230,6 +239,24 @@ export default function Home() {
               {bookingMessage && (
                 <div className="mt-3 text-center text-green-600 font-semibold">{bookingMessage}</div>
               )}
+            </div>
+          </div>
+        )}
+        {/* 予約完了モーダル */}
+        {showBookingNumberModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-xs relative text-center">
+              <button
+                className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
+                onClick={() => setShowBookingNumberModal(false)}
+              >
+                ×
+              </button>
+              <div className="text-lg font-bold mb-2">予約が完了しました！</div>
+              <div className="text-2xl font-bold text-green-700 mb-4">
+                予約番号 {lastBookingNumber}
+              </div>
+              <div className="text-sm text-gray-600">この番号を控えておいてください。</div>
             </div>
           </div>
         )}

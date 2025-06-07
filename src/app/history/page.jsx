@@ -65,6 +65,9 @@ export default async function HistoryPage() {
               key={booking.id}
               className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
             >
+              <div className="font-bold text-lg mb-1">
+                予約番号{booking.bookingNumber}
+              </div>
               <p className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">
                 {formatBookingDateTime(booking.bookingDate, booking.bookingTime)}
               </p>
