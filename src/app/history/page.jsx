@@ -82,10 +82,19 @@ export default async function HistoryPage() {
                   {booking.type === 'PERSON' ? '人' : booking.type === 'LUGGAGE' ? '荷物' : '不明'}
                 </p>
                 {/* 荷物の種類を表示 */}
-                {booking.type === 'LUGGAGE' && Array.isArray(booking.luggageOptions) && booking.luggageOptions.length > 0 && (
+                {booking.type === 'LUGGAGE' && booking.luggageOptions && (
                   <p>
                     <span className="font-medium">荷物の種類：</span>
-                    {booking.luggageOptions
+                    {(Array.isArray(booking.luggageOptions)
+                      ? booking.luggageOptions
+                      : (() => {
+                          try {
+                            return JSON.parse(booking.luggageOptions);
+                          } catch {
+                            return [];
+                          }
+                        })()
+                    )
                       .map(opt => luggageLabels.find(l => l.value === opt)?.label || opt)
                       .join('、')}
                   </p>
