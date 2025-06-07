@@ -117,6 +117,7 @@ export async function getUserBookings(userEmail) {
     return { success: false, message: 'ユーザー情報が取得できませんでした。', bookings: [] };
   }
   try {
+    // 過去・未来すべての予約を取得（フィルタなし）
     const bookings = await prisma.booking.findMany({
       where: {
         email: userEmail,

@@ -30,10 +30,9 @@ export default function Home() {
   useEffect(() => {
     if (status === 'authenticated') {
       setLoading(true);
-      fetch('/api/all-bookings')
-        .then(res => res.json())
-        .then(data => {
-          setAllBookings(data.bookings || []);
+      getBookings()
+        .then(result => {
+          setAllBookings(result.bookings || []);
           setLoading(false);
         })
         .catch(() => setLoading(false));
