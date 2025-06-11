@@ -4,9 +4,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
 
+const busStops = [
+  { name: '滋賀病院前バス停', lat: 35.0155, lng: 135.8605 },
+  { name: '瀬田駅バス停', lat: 34.9957, lng: 135.9142 },
+  { name: '龍谷大学前バス停', lat: 34.9952, lng: 135.9227 },
+];
+
 const MapDisplay = () => {
   const [currentPosition, setCurrentPosition] = useState(null);
   const [mapError, setMapError] = useState(null);
+  const [showBusStops, setShowBusStops] = useState(false);
 
   // デフォルトのセンター (例: 大津市役所)
   const defaultCenter = {
@@ -62,41 +69,68 @@ const MapDisplay = () => {
   }
 
   return (
-    <LoadScript
-      googleMapsApiKey={apiKey}
-      libraries={['places']} // placesライブラリも読み込んでおくと、将来的に場所検索などで便利です
-    >
-      {mapError && (
-        <p className="text-orange-600 bg-orange-100 p-3 rounded-md text-center mb-3 text-sm whitespace-pre-line">
-          {mapError}
-        </p>
-      )}
-      {currentPosition ? (
-        <GoogleMap
-          mapContainerStyle={mapContainerStyle}
-          center={currentPosition}
-          zoom={15} // ズームレベル
-          options={{ // 地図のオプション設定
-            streetViewControl: false, // ストリートビューのコントロールを非表示 (任意)
-            mapTypeControl: false,    // マップタイプ (航空写真など) のコントロールを非表示 (任意)
-            fullscreenControl: true,  // フルスクリーンボタンを表示 (任意)
-            zoomControl: true,        // ズームコントロールを表示 (任意)
-          }}
-        >
-          {/* 現在地 (またはデフォルト地点) にマーカーを立てる */}
-          <MarkerF 
-            position={currentPosition} 
-            title={mapError && mapError.includes("デフォルト地点") ? "大津市役所付近" : "あなたの現在地 (またはその周辺)"} 
-          />
-          {/* 例: 他のマーカーを追加する場合 */}
-          {/* <MarkerF position={{ lat: 35.0030, lng: 135.8600 }} title="浜大津" /> */}
-        </GoogleMap>
-      ) : (
-        <div className="flex items-center justify-center text-lg text-gray-600 dark:text-gray-400" style={mapContainerStyle}>
-          地図を読み込み中か、位置情報を取得中です...
-        </div>
-      )}
-    </LoadScript>
+    <>
+      <button
+        className="px-6 py-3 bg-blue-600 text-white rounded-md font-semibold shadow hover:bg-blue-700 transition mb-4"
+        onClick={() => setShowBusStops(true)}
+      >
+        近くのバス停を検索
+      </button>
+      <LoadScript
+        googleMapsApiKey={apiKey}
+        libraries={['places']} // placesライブラリも読み込んでおくと、将来的に場所検索などで便利です
+      >
+        {mapError && (
+          <p className="text-orange-600 bg-orange-100 p-3 rounded-md text-center mb-3 text-sm whitespace-pre-line">
+            {mapError}
+          </p>
+        )}
+        {currentPosition ? (
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            center={currentPosition}
+            zoom={15} // ズームレベル
+            options={{ // 地図のオプション設定
+              streetViewControl: false, // ストリートビューのコントロールを非表示 (任意)
+              mapTypeControl: false,    // マップタイプ (航空写真など) のコントロールを非表示 (任意)
+              fullscreenControl: true,  // フルスクリーンボタンを表示 (任意)
+              zoomControl: true,        // ズームコントロールを表示 (任意)
+            }}
+          >
+            {/* 現在地マーカー */}
+            <MarkerF
+              position={currentPosition}
+              title="あなたの現在地 (またはその周辺)"
+              icon={{
+                url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+              }}
+            />
+            {/* バス停マーカー（ボタン押下時のみ表示） */}
+            {showBusStops &&
+              busStops.map((stop, idx) => (
+                <MarkerF
+                  key={idx}
+                  position={{ lat: stop.lat, lng: stop.lng }}
+                  title={stop.name}
+                  label={{
+                    text: stop.name,
+                    color: '#333',
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                  }}
+                  icon={{
+                    url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                  }}
+                />
+              ))}
+          </GoogleMap>
+        ) : (
+          <div className="flex items-center justify-center text-lg text-gray-600 dark:text-gray-400" style={mapContainerStyle}>
+            地図を読み込み中か、位置情報を取得中です...
+          </div>
+        )}
+      </LoadScript>
+    </>
   );
 };
 
