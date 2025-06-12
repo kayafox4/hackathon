@@ -67,6 +67,16 @@ export async function createBooking(formData) {
       },
     });
 
+    // ここで通知も作成
+    await prisma.notification.create({
+      data: {
+        userEmail: email,
+        message: `予約番号: ${newBooking.bookingNumber} の予約が完了しました。`,
+        isRead: false,
+        bookingId: newBooking.id,
+      },
+    });
+
     revalidatePath('/history');
     revalidatePath('/');
     return { success: true, booking: newBooking, message: '予約が完了しました。' };
