@@ -50,11 +50,14 @@ model Notification {
   @@index([userEmail, isRead]) // ユーザーごと・未読/既読での検索を高速化
 }
 
-// 既存の Booking モデルに、関連する通知のリストを持たせる場合 (任意)
-// model Booking {
-//   id                String   @id @default(uuid())
-//   // ... 他のフィールド ...
-//   notifications     Notification[] // この予約に関連する通知のリスト
-//   createdAt         DateTime @default(now())
-//   updatedAt         DateTime @updatedAt
-// }
+model Card {
+  id          String   @id @default(uuid())
+  userEmail   String   // ユーザーのメールアドレス
+  cardNumber  String   // 暗号化推奨
+  expiryDate  String
+  securityCode String  // 暗号化推奨
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userEmail])
+}
