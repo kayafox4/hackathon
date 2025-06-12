@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { GoogleMap, LoadScript, MarkerF } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, MarkerF, Autocomplete } from '@react-google-maps/api';
 
 const busStops = [
   { name: '別所バス停', lat: 35.031268, lng: 135.842742 },
@@ -490,10 +490,31 @@ const busStops = [
   { name: '細川バス停', lat: 35.2902, lng: 135.8328 }
 ];
 
+const getDistance = (lat1, lng1, lat2, lng2) => {
+  // Haversine 公式
+  const toRad = (value) => (value * Math.PI) / 180;
+  const R = 6371000; // 地球の半径(m)
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 const MapDisplay = () => {
   const [currentPosition, setCurrentPosition] = useState(null);
   const [mapError, setMapError] = useState(null);
   const [showBusStops, setShowBusStops] = useState(false);
+  const [search, setSearch] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [selectedBusStop, setSelectedBusStop] = useState(null);
+  const [mapInstance, setMapInstance] = useState(null);
+  const [nearbyBusStops, setNearbyBusStops] = useState([]);
 
   // デフォルトのセンター (例: 大津市役所)
   const defaultCenter = {
@@ -540,6 +561,43 @@ const MapDisplay = () => {
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
+  // 予測変換
+  useEffect(() => {
+    if (search.length === 0) {
+      setSuggestions([]);
+      return;
+    }
+    setSuggestions(
+      busStops.filter((stop) =>
+        stop.name.toLowerCase().includes(search.toLowerCase())
+      ).slice(0, 10)
+    );
+  }, [search]);
+
+  // バス停選択時に地図を移動
+  useEffect(() => {
+    if (selectedBusStop && mapInstance) {
+      mapInstance.panTo({ lat: selectedBusStop.lat, lng: selectedBusStop.lng });
+      mapInstance.setZoom(17);
+    }
+  }, [selectedBusStop, mapInstance]);
+
+  // 「近くのバス停を検索」ボタン押下時
+  const handleShowNearbyBusStops = () => {
+    if (!currentPosition) return;
+    const filtered = busStops.filter((stop) => {
+      const dist = getDistance(
+        currentPosition.lat,
+        currentPosition.lng,
+        stop.lat,
+        stop.lng
+      );
+      return dist <= 500;
+    });
+    setNearbyBusStops(filtered);
+    setShowBusStops(true);
+  };
+
   if (!apiKey) {
     return (
       <div className="p-4 text-center text-red-600 bg-red-100 rounded-md">
@@ -550,15 +608,66 @@ const MapDisplay = () => {
 
   return (
     <>
+      {/* 検索欄 */}
+      <div className="w-full max-w-md mx-auto mb-4 relative">
+        <input
+          type="text"
+          className="w-full border rounded-md px-4 py-2 text-lg"
+          placeholder="バス停名を検索"
+          value={search}
+          onChange={e => {
+            setSearch(e.target.value);
+            setSelectedBusStop(null);
+          }}
+          onBlur={() => {
+            // 入力値がバス停名と一致する場合、そのバス停を選択
+            const found = busStops.find(
+              stop => stop.name === search
+            );
+            if (found) {
+              setSelectedBusStop(found);
+            }
+          }}
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              const found = busStops.find(
+                stop => stop.name === search
+              );
+              if (found) {
+                setSelectedBusStop(found);
+                setSuggestions([]);
+              }
+            }
+          }}
+          autoComplete="off"
+        />
+        {suggestions.length > 0 && (
+          <ul className="absolute z-10 bg-white border w-full rounded shadow max-h-60 overflow-y-auto">
+            {suggestions.map((stop, idx) => (
+              <li
+                key={stop.name + idx}
+                className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
+                onClick={() => {
+                  setSearch(stop.name);
+                  setSelectedBusStop(stop);
+                  setSuggestions([]);
+                }}
+              >
+                {stop.name}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       <button
         className="px-6 py-3 bg-blue-600 text-white rounded-md font-semibold shadow hover:bg-blue-700 transition mb-4"
-        onClick={() => setShowBusStops(true)}
+        onClick={handleShowNearbyBusStops}
       >
         近くのバス停を検索
       </button>
       <LoadScript
         googleMapsApiKey={apiKey}
-        libraries={['places']} // placesライブラリも読み込んでおくと、将来的に場所検索などで便利です
+        libraries={['places']}
       >
         {mapError && (
           <p className="text-orange-600 bg-orange-100 p-3 rounded-md text-center mb-3 text-sm whitespace-pre-line">
@@ -568,13 +677,18 @@ const MapDisplay = () => {
         {currentPosition ? (
           <GoogleMap
             mapContainerStyle={mapContainerStyle}
-            center={currentPosition}
-            zoom={15} // ズームレベル
-            options={{ // 地図のオプション設定
-              streetViewControl: false, // ストリートビューのコントロールを非表示 (任意)
-              mapTypeControl: false,    // マップタイプ (航空写真など) のコントロールを非表示 (任意)
-              fullscreenControl: true,  // フルスクリーンボタンを表示 (任意)
-              zoomControl: true,        // ズームコントロールを表示 (任意)
+            center={
+              selectedBusStop
+                ? { lat: selectedBusStop.lat, lng: selectedBusStop.lng }
+                : currentPosition
+            }
+            zoom={selectedBusStop ? 17 : 15}
+            onLoad={map => setMapInstance(map)}
+            options={{
+              streetViewControl: false,
+              mapTypeControl: false,
+              fullscreenControl: true,
+              zoomControl: true,
             }}
           >
             {/* 現在地マーカー */}
@@ -585,9 +699,9 @@ const MapDisplay = () => {
                 url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
               }}
             />
-            {/* バス停マーカー（ボタン押下時のみ表示） */}
+            {/* バス停マーカー（半径500m以内のみ表示） */}
             {showBusStops &&
-              busStops.map((stop, idx) => (
+              nearbyBusStops.map((stop, idx) => (
                 <MarkerF
                   key={idx}
                   position={{ lat: stop.lat, lng: stop.lng }}
@@ -603,6 +717,16 @@ const MapDisplay = () => {
                   }}
                 />
               ))}
+            {/* 検索で選択したバス停を強調 */}
+            {selectedBusStop && (
+              <MarkerF
+                position={{ lat: selectedBusStop.lat, lng: selectedBusStop.lng }}
+                title={selectedBusStop.name}
+                icon={{
+                  url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
+                }}
+              />
+            )}
           </GoogleMap>
         ) : (
           <div className="flex items-center justify-center text-lg text-gray-600 dark:text-gray-400" style={mapContainerStyle}>
