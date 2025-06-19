@@ -3,8 +3,9 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link'; // マイページに戻るため
+import Link from 'next/link';
 import { ArrowLeftIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/solid';
+import { useRouter } from 'next/navigation';
 
 // 表示するカードブランドのロゴ情報
 const cardLogos = [
@@ -21,18 +22,7 @@ export default function AddCardPage() {
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [securityCode, setSecurityCode] = useState('');
-
-  const handleRegisterCard = (e) => {
-    e.preventDefault();
-    // ここでは見た目だけなので、入力された情報をログに出すかアラート表示
-    console.log({
-      cardNumber,
-      expiryDate,
-      securityCode,
-    });
-    alert('カード情報が入力されました！\n（実際の登録処理はまだありません）');
-    // 将来的にはここで決済代行サービスへの情報送信などを行う
-  };
+  const router = useRouter();
 
   // カード番号のフォーマット (0000 0000 0000 0000)
   const formatCardNumber = (value) => {
@@ -53,6 +43,13 @@ export default function AddCardPage() {
     return cleaned;
   };
 
+  // 登録ボタン押下時
+  const handleRegisterCard = async (e) => {
+    e.preventDefault();
+    // ここでカード登録処理を行う（省略）
+    // マイページに「クレジットカード」選択状態で遷移
+    router.push('/test?payment=credit_card');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center">

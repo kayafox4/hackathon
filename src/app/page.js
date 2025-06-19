@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import busStops from '@/lib/busStops';
 import { getBookings, createBooking } from './actions/booking';
 import React from 'react';
+import { FaUser, FaSuitcase } from 'react-icons/fa';
 
 // 日付と時間を日本語でフォーマット
 function formatBookingDateTime(dateString, timeString) {
@@ -33,8 +34,13 @@ function formatBookingDateTime(dateString, timeString) {
 
 // 予約タイプアイコン
 function BookingTypeIcon({ type }) {
-  if (type === 'PERSON') return <span title="人" className="mr-1">🧑</span>;
-  if (type === 'LUGGAGE') return <span title="荷物" className="mr-1">🧳</span>;
+  const style = { color: '#666', marginRight: '0.25rem', fontSize: '1.2em', verticalAlign: 'middle' };
+  if (type === 'PERSON') {
+    return <FaUser title="人" style={style} />;
+  }
+  if (type === 'LUGGAGE') {
+    return <FaSuitcase title="荷物" style={style} />;
+  }
   return null;
 }
 
