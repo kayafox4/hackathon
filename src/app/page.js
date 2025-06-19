@@ -146,7 +146,7 @@ export default function Home() {
           <div className="w-full max-w-xl flex items-center justify-between bg-green-900 rounded-2xl p-6 shadow-lg min-h-[110px]">
             <div>
               <div className="text-xs text-green-200 mb-1 tracking-widest">hakobune app</div>
-              <div className="text-white text-base font-semibold leading-relaxed">
+              <div className="text-white text-sm font-semibold leading-relaxed">
                 いつでも気軽にバスに乗ろう。<br />
                 ハコブネで人だけでなく荷物も。
               </div>
@@ -161,7 +161,7 @@ export default function Home() {
             <div>
               <div className="text-xs text-green-200 mb-1 tracking-widest">MOBILE booking & pay</div>
               <div className="text-white text-base font-semibold leading-relaxed">
-                アプリでお支払い
+                アプリで予約・お支払い
               </div>
             </div>
             <div className="flex items-center space-x-4 ml-4">
