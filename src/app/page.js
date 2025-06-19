@@ -9,6 +9,7 @@ import busStops from '@/lib/busStops';
 import { getBookings, createBooking } from './actions/booking';
 import React from 'react';
 import { FaUser, FaSuitcase, FaBus, FaSmile, FaMobileAlt, FaMoneyBillWave } from 'react-icons/fa';
+import { MdDirectionsBus, MdEmojiPeople, MdSmartphone, MdAttachMoney } from 'react-icons/md';
 import Image from 'next/image';
 
 // 日付と時間を日本語でフォーマット
@@ -152,8 +153,8 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center space-x-4 ml-4">
-              <FaBus className="text-white text-4xl" />
-              <FaSmile className="text-yellow-300 text-4xl" />
+              <MdDirectionsBus className="text-white text-5xl drop-shadow" />
+              <MdEmojiPeople className="text-yellow-200 text-5xl drop-shadow" />
             </div>
           </div>
           {/* 2つ目のパネル */}
@@ -165,8 +166,8 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center space-x-4 ml-4">
-              <FaMobileAlt className="text-white text-3xl" />
-              <FaMoneyBillWave className="text-green-300 text-3xl" />
+              <MdSmartphone className="text-white text-4xl drop-shadow" />
+              <MdAttachMoney className="text-green-300 text-4xl drop-shadow" />
             </div>
           </div>
           {/* Googleでログインボタン（中央寄せ） */}
