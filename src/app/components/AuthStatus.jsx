@@ -9,7 +9,6 @@ export default function AuthStatus() {
   if (status === 'authenticated') {
     return (
       <div className="mb-4 text-center">
-        <p className="text-lg">ようこそ、{session.user?.name}さん</p>
         <Logout />
       </div>
     );
