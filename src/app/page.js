@@ -1,6 +1,6 @@
 'use client'; // Client Component
 
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 import Login from './components/Login';
 import NavigationBar from './components/NavigationBar';
 import AuthStatus from './components/AuthStatus';
@@ -8,7 +8,8 @@ import { useEffect, useState } from 'react';
 import busStops from '@/lib/busStops';
 import { getBookings, createBooking } from './actions/booking';
 import React from 'react';
-import { FaUser, FaSuitcase } from 'react-icons/fa';
+import { FaUser, FaSuitcase, FaBus, FaSmile, FaMobileAlt, FaMoneyBillWave } from 'react-icons/fa';
+import Image from 'next/image';
 
 // 日付と時間を日本語でフォーマット
 function formatBookingDateTime(dateString, timeString) {
@@ -123,6 +124,59 @@ export default function Home() {
     } finally {
       setBookingLoading(false);
     }
+  }
+
+  // ログインしていない場合の広告風パネル
+  if (status !== 'authenticated') {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <main className="flex-grow flex flex-col items-center justify-center p-4 space-y-6">
+          {/* BIWAKOバス画像をAppBarの下・1つ目のパネルの上に表示 */}
+          <div className="w-full max-w-xl mb-4">
+            <Image
+              src="/bus.jpg" // publicフォルダに保存した場合のパス
+              alt="BIWAKOバス"
+              width={1200}
+              height={650}
+              className="rounded-xl w-full object-cover"
+              priority
+            />
+          </div>
+          {/* 1つ目のパネル */}
+          <div className="w-full max-w-xl flex items-center justify-between bg-green-900 rounded-2xl p-6 shadow-lg min-h-[110px]">
+            <div>
+              <div className="text-xs text-green-200 mb-1 tracking-widest">hakobune app</div>
+              <div className="text-white text-base font-semibold leading-relaxed">
+                いつでも気軽にバスに乗ろう。<br />
+                ハコブネで人だけでなく荷物も。
+              </div>
+            </div>
+            <div className="flex items-center space-x-4 ml-4">
+              <FaBus className="text-white text-4xl" />
+              <FaSmile className="text-yellow-300 text-4xl" />
+            </div>
+          </div>
+          {/* 2つ目のパネル */}
+          <div className="w-full max-w-xl flex items-center justify-between bg-[#4E342E] rounded-2xl p-6 shadow-lg min-h-[90px]">
+            <div>
+              <div className="text-xs text-green-200 mb-1 tracking-widest">MOBILE booking & pay</div>
+              <div className="text-white text-base font-semibold leading-relaxed">
+                アプリでお支払い
+              </div>
+            </div>
+            <div className="flex items-center space-x-4 ml-4">
+              <FaMobileAlt className="text-white text-3xl" />
+              <FaMoneyBillWave className="text-green-300 text-3xl" />
+            </div>
+          </div>
+          {/* Googleでログインボタン（中央寄せ） */}
+          <div className="w-full flex justify-center mt-6">
+            <Login />
+          </div>
+        </main>
+        <NavigationBar />
+      </div>
+    );
   }
 
   return (
