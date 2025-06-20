@@ -212,23 +212,10 @@ export default function Home() {
                             出発: {booking.departureBusStop} → 到着: {booking.arrivalBusStop}
                           </div>
                         </div>
-                        <div className="flex items-center mt-4 sm:mt-0 sm:ml-4">
-                          <button
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md font-semibold shadow hover:bg-blue-700 transition"
-                            onClick={() => {
-                              setSelectedBooking(booking);
-                              setShowModal(true);
-                              setRideType('PERSON');
-                              setBookingMessage('');
-                            }}
-                          >
-                            相乗り
-                          </button>
-                          {/* カウント表示 */}
-                          <span className="ml-3 px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-sm font-bold text-gray-700 dark:text-gray-200">
-                            {booking.count}人
-                          </span>
-                        </div>
+                        {/* 人数表示のみ */}
+                        <span className="ml-3 px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-sm font-bold text-gray-700 dark:text-gray-200 mt-4 sm:mt-0 sm:ml-4">
+                          {booking.count}人
+                        </span>
                       </div>
                     ))
                   ) : (
@@ -251,76 +238,7 @@ export default function Home() {
         ) : (
           <Login />
         )}
-        {/* モーダル */}
-        {showModal && selectedBooking && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md relative">
-              <button
-                className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
-                onClick={() => setShowModal(false)}
-              >
-                ×
-              </button>
-              <h3 className="text-lg font-bold mb-4">相乗り予約内容の確認</h3>
-              <div className="mb-2">
-                <span className="font-semibold">日時：</span>
-                {formatBookingDateTime(selectedBooking.bookingDate, selectedBooking.bookingTime)}
-              </div>
-              <div className="mb-2">
-                <span className="font-semibold">出発：</span>{selectedBooking.departureBusStop}
-              </div>
-              <div className="mb-2">
-                <span className="font-semibold">到着：</span>{selectedBooking.arrivalBusStop}
-              </div>
-              <div className="mb-2">
-                <span className="font-semibold">料金：</span>
-                {rideType === 'PERSON' ? '500円' : '300円'}
-              </div>
-              <div className="flex gap-2 mb-4">
-                <button
-                  className={`flex-1 py-2 rounded-md font-semibold ${rideType === 'PERSON' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-                  onClick={() => setRideType('PERSON')}
-                >
-                  人
-                </button>
-                <button
-                  className={`flex-1 py-2 rounded-md font-semibold ${rideType === 'LUGGAGE' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-                  onClick={() => setRideType('LUGGAGE')}
-                >
-                  荷物
-                </button>
-              </div>
-              <button
-                className="w-full py-2 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700 transition"
-                onClick={handleRideShareBooking}
-                disabled={bookingLoading}
-              >
-                {bookingLoading ? '予約中...' : 'この内容で相乗り予約する'}
-              </button>
-              {bookingMessage && (
-                <div className="mt-3 text-center text-green-600 font-semibold">{bookingMessage}</div>
-              )}
-            </div>
-          </div>
-        )}
-        {/* 予約完了モーダル */}
-        {showBookingNumberModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-xs relative text-center">
-              <button
-                className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
-                onClick={() => setShowBookingNumberModal(false)}
-              >
-                ×
-              </button>
-              <div className="text-lg font-bold mb-2">予約が完了しました！</div>
-              <div className="text-2xl font-bold text-green-700 mb-4">
-                予約番号 {lastBookingNumber}
-              </div>
-              <div className="text-sm text-gray-600">この番号を控えておいてください。</div>
-            </div>
-          </div>
-        )}
+        {/* モーダル・相乗り関連のコードは削除 */}
       </main>
       <NavigationBar />
     </div>
