@@ -63,6 +63,10 @@ export default function Home() {
   const [showBookingNumberModal, setShowBookingNumberModal] = useState(false);
   const [lastBookingNumber, setLastBookingNumber] = useState('');
 
+  // 詳細モーダル用のstate
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailBooking, setDetailBooking] = useState(null);
+
   // 予約データを取得
   useEffect(() => {
     if (status === 'authenticated') {
@@ -212,10 +216,20 @@ export default function Home() {
                             出発: {booking.departureBusStop} → 到着: {booking.arrivalBusStop}
                           </div>
                         </div>
-                        {/* 人数表示のみ */}
-                        <span className="ml-3 px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-sm font-bold text-gray-700 dark:text-gray-200 mt-4 sm:mt-0 sm:ml-4">
-                          {booking.count}人
-                        </span>
+                        <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                          <span className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-sm font-bold text-gray-700 dark:text-gray-200">
+                            {booking.count}人
+                          </span>
+                          <button
+                            className="ml-2 px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                            onClick={() => {
+                              setDetailBooking(booking);
+                              setShowDetailModal(true);
+                            }}
+                          >
+                            詳細
+                          </button>
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -238,7 +252,38 @@ export default function Home() {
         ) : (
           <Login />
         )}
-        {/* モーダル・相乗り関連のコードは削除 */}
+
+        {/* 詳細モーダル */}
+        {showDetailModal && detailBooking && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md relative">
+              <button
+                className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
+                onClick={() => setShowDetailModal(false)}
+              >
+                ×
+              </button>
+              <h3 className="text-lg font-bold mb-4">予約内容の詳細</h3>
+              <div className="mb-2">
+                <span className="font-semibold">日時：</span>
+                {formatBookingDateTime(detailBooking.bookingDate, detailBooking.bookingTime)}
+              </div>
+              <div className="mb-2">
+                <span className="font-semibold">出発：</span>{detailBooking.departureBusStop}
+              </div>
+              <div className="mb-2">
+                <span className="font-semibold">到着：</span>{detailBooking.arrivalBusStop}
+              </div>
+              <div className="mb-2">
+                <span className="font-semibold">人数：</span>{detailBooking.count}人
+              </div>
+              <div className="mb-2">
+                <span className="font-semibold">タイプ：</span>
+                {detailBooking.type === 'PERSON' ? '人' : '荷物'}
+              </div>
+            </div>
+          </div>
+        )}
       </main>
       <NavigationBar />
     </div>
